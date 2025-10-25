@@ -1,146 +1,176 @@
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+// src/pages/Interview/SystemDesignInterview.tsx
+import React, { useCallback, useMemo, useState } from "react";
 import {
-  Container,
-  Box,
-  Typography,
-  Paper,
-  AppBar,
-  Toolbar,
-  Button,
-  Alert,
-} from '@mui/material';
-import SystemDesignCanvas from '../../components/canvas/SystemDesignCanvas';
-import { interviewService } from '../../services/interview.service';
-import type { Problem } from '../../types/interview';
+  ReactFlow,
+  Background,
+  Controls,
+  MiniMap,
+  useNodesState,
+  useEdgesState,
+  addEdge,
+  Handle,
+  Position,
+  ConnectionMode,
+  type Node,
+  type Edge,
+  type Connection,
+  MarkerType,
+  type NodeTypes,
+  ConnectionLineType,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
-export default function SystemDesignInterview() {
-  const { interviewId } = useParams<{ interviewId: string }>();
-  const [problem, setProblem] = useState<Problem | null>(null);
-  const [timeRemaining, setTimeRemaining] = useState(3600);
-  const [isSubmitted, setIsSubmitted] = useState(false);
+type EdgeKind = "line" | "arrow";
 
-  useEffect(() => {
-    loadProblem();
-    startTimer();
-  }, []);
-
-  const loadProblem = async () => {
-    try {
-      const mockProblem: Problem = {
-        id: '1',
-        title: 'Design a URL Shortener',
-        description: 'Design a scalable URL shortening service like bit.ly. Your system should be able to handle millions of URLs and provide fast redirection. Consider aspects like database design, caching, and handling high traffic.',
-        type: 'system-design',
-        difficulty: 'medium',
-      };
-      setProblem(mockProblem);
-    } catch (error) {
-      console.error('Failed to load problem:', error);
-    }
-  };
-
-  const startTimer = () => {
-    const interval = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          handleSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handleSaveSnapshot = async (nodes: any[], edges: any[]) => {
-    try {
-      if (interviewId) {
-        await interviewService.saveDiagramSnapshot(interviewId, {
-          components: nodes,
-          connections: edges,
-          timestamp: new Date().toISOString(),
-        });
-      }
-    } catch (error) {
-      console.error('Failed to save snapshot:', error);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (window.confirm('Are you sure you want to submit? This action cannot be undone.')) {
-      try {
-        setIsSubmitted(true);
-        alert('Interview submitted successfully!');
-      } catch (error) {
-        console.error('Failed to submit interview:', error);
-      }
-    }
-  };
-
-  if (!problem) {
-    return <Typography>Loading...</Typography>;
-  }
-
-  if (isSubmitted) {
-    return (
-      <Container maxWidth="md" sx={{ mt: 8 }}>
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
-          <Typography variant="h4" gutterBottom>
-            Interview Submitted!
-          </Typography>
-          <Typography variant="body1">
-            Thank you for completing the system design interview. The recruiter will review your submission and get back to you soon.
-          </Typography>
-        </Paper>
-      </Container>
-    );
-  }
+/** Custom node: four SOURCE handles only (top/right/bottom/left).
+ *  With ConnectionMode.Loose, you can drop on the target node body.
+ *  This ensures direction is always Start → Target (A → B). */
+function FourSideSourceNode({
+  id,
+  data,
+  selected,
+}: {
+  id: string;
+  data: { label: string };
+  selected?: boolean;
+}) {
+  const box = `rounded-xl border px-3 py-2 text-sm shadow-sm min-w-[140px]`;
+  const theme = selected
+    ? "border-sky-400 bg-neutral-800"
+    : "border-neutral-700 bg-neutral-900";
+  const knob = "!w-3 !h-3 rounded-full border border-neutral-500 !bg-zinc-300";
 
   return (
-    <>
-      <AppBar position="static" color={timeRemaining < 300 ? 'error' : 'primary'}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            System Design Interview
-          </Typography>
-          <Typography variant="h6" sx={{ mr: 2 }}>
-            Time Remaining: {formatTime(timeRemaining)}
-          </Typography>
-          <Button color="inherit" variant="outlined" onClick={handleSubmit}>
-            Submit
-          </Button>
-        </Toolbar>
-      </AppBar>
+    <div className={`${box} ${theme}`}>
+      <div className="text-neutral-100">{data.label}</div>
 
-      <Container maxWidth="xl" sx={{ mt: 3, mb: 3 }}>
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            {problem.title}
-          </Typography>
-          <Typography variant="body1" paragraph>
-            {problem.description}
-          </Typography>
-          <Alert severity="info">
-            <Typography variant="body2">
-              <strong>Tip:</strong> Consider scalability, latency, consistency, and fault tolerance. 
-              Use the components to design your system architecture and explain your choices.
-            </Typography>
-          </Alert>
-        </Paper>
-
-        <Box sx={{ height: 'calc(100vh - 300px)' }}>
-          <SystemDesignCanvas onSaveSnapshot={handleSaveSnapshot} />
-        </Box>
-      </Container>
-    </>
+      {/* Top source */}
+      <Handle id={`${id}-t-src`} type="source" position={Position.Top} className={knob} />
+      {/* Right source */}
+      <Handle id={`${id}-r-src`} type="source" position={Position.Right} className={knob} />
+      {/* Bottom source */}
+      <Handle id={`${id}-b-src`} type="source" position={Position.Bottom} className={knob} />
+      {/* Left source */}
+      <Handle id={`${id}-l-src`} type="source" position={Position.Left} className={knob} />
+    </div>
   );
 }
+
+const nodeTypes: NodeTypes = { system: FourSideSourceNode };
+
+const initialNodes: Node[] = [
+  { id: "a", type: "system", position: { x: 180, y: 120 }, data: { label: "Component A" } },
+  { id: "b", type: "system", position: { x: 520, y: 320 }, data: { label: "Component B" } },
+];
+
+const initialEdges: Edge[] = [];
+
+const SystemDesignInterview: React.FC = () => {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>(initialNodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialEdges);
+  const [edgeKind, setEdgeKind] = useState<EdgeKind>("arrow");
+
+  // Always creates A -> B; since we only render source handles,
+  // user must start on A (source) and drop on B (node body).
+  const onConnect = useCallback(
+    (params: Connection) => {
+      setEdges((eds) => {
+        if (!params.source || !params.target) return eds;
+
+        const base: Edge = {
+          id: crypto.randomUUID(),
+          source: params.source,
+          target: params.target,
+          // Note: targetHandle may be undefined because we drop on node body; that's fine.
+          sourceHandle: params.sourceHandle ?? null,
+          targetHandle: params.targetHandle ?? null,
+          style: { strokeWidth: 2 },
+        };
+
+        if (edgeKind === "line") {
+          return addEdge(base, eds);
+        }
+
+        // One-sided arrow (points to target B)
+        return addEdge(
+          { ...base, markerEnd: { type: MarkerType.ArrowClosed } },
+          eds
+        );
+      });
+    },
+    [edgeKind]
+  );
+
+  const addComponent = () => {
+    const id = crypto.randomUUID();
+    const n: Node = {
+      id,
+      type: "system",
+      position: { x: 240 + Math.random() * 280, y: 140 + Math.random() * 280 },
+      data: { label: `Component ${id.slice(0, 4)}` },
+    };
+    setNodes((ns) => [...ns, n]);
+  };
+
+  const edgeKindLabel = useMemo(
+    () => ({ line: "Line", arrow: "→ Arrow (to target)" }[edgeKind]),
+    [edgeKind]
+  );
+
+  return (
+    <div className="w-full h-screen grid grid-rows-[56px_1fr] bg-neutral-950 text-neutral-100">
+      {/* Toolbar */}
+      <header className="flex items-center gap-3 px-3 border-b border-neutral-800">
+        <div className="text-sm opacity-80">System Design Interview</div>
+
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={addComponent}
+            className="px-3 py-1.5 rounded-md bg-neutral-200 text-neutral-900 text-sm"
+          >
+            + Add Component
+          </button>
+
+          <div className="flex items-center gap-1">
+            <span className="text-xs opacity-70">Edge:</span>
+            <select
+              value={edgeKind}
+              onChange={(e) => setEdgeKind(e.target.value as EdgeKind)}
+              className="bg-neutral-900 border border-neutral-700 rounded-md px-2 py-1 text-sm"
+            >
+              <option value="line">Line (no arrows)</option>
+              <option value="arrow">Arrow (to target)</option>
+            </select>
+          </div>
+
+          <span className="text-xs px-2 py-1 rounded bg-neutral-800 border border-neutral-700">
+            {edgeKindLabel}
+          </span>
+        </div>
+      </header>
+
+      {/* Canvas */}
+      <div className="w-full h-full">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          nodeTypes={nodeTypes}
+          connectionMode={ConnectionMode.Loose}               // allow dropping on node body as target
+          connectionLineType={ConnectionLineType.SmoothStep}  // built-in curved connectors
+          fitView
+          fitViewOptions={{ padding: 0.2 }}
+          className="bg-neutral-900"
+        >
+          <MiniMap />
+          <Controls />
+          <Background gap={16} />
+        </ReactFlow>
+      </div>
+    </div>
+  );
+};
+
+export default SystemDesignInterview;

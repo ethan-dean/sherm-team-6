@@ -60,6 +60,11 @@ function App() {
           <Route path="/interview/technical/:interviewId" element={<TechnicalInterview />} />
           <Route path="/interview/behavioral/:interviewId" element={<BehavioralInterview />} />
 
+          
+
+                    <Route path="/test" element={<SystemDesignInterview />} />
+
+
           {/* Practice Mode */}
           <Route path="/practice" element={<PracticeMode />} />
 
