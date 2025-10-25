@@ -1,0 +1,22 @@
+/* Make control panel background dark */
+.react-flow__controls {
+  background-color: #111827 !important; /* neutral-900 */
+  border: 1px solid #374151 !important; /* slate-700 */
+  box-shadow: none !important;
+}
+
+/* Make control buttons dark and icons light */
+.react-flow__controls-button {
+  background-color: #1f2937 !important; /* slate-800 */
+  color: #e5e7eb !important;            /* gray-200 */
+  border-bottom: 1px solid #374151 !important;
+}
+.react-flow__controls-button:hover {
+  background-color: #374151 !important; /* slate-700 */
+}
+
+/* Ensure SVG icons aren't inverted or white */
+.react-flow__controls-button svg path {
+  fill: #e5e7eb !important; /* light gray icon */
+  filter: none !important;
+}
