@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { ProctoringFrame, ProctoringViolation } from '@/types/proctoring'
+import { ProctoringFrame, ProctoringViolation } from '../frontend/types/proctoring'
 
 const GEMINI_API_KEY = 'AIzaSyD-9-jec8yZmLVSzaVQjAHd6YFjipFFxm8'
 
@@ -74,6 +74,6 @@ export async function analyzeFrame(frame:ProctoringFrame): Promise<ProctoringVio
         return violations
     } catch (error: any) {
         console.error("Frame analysis error: ", error)
-        return[]
+        return []
     }
 }
