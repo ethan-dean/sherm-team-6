@@ -3,7 +3,7 @@
 import { Resend } from 'resend'
 import InterviewInviteEmail from '@/emails/InterviewInvite'
 
-const RESEND_API_KEY = process.env.RESEND_API_KEY
+const RESEND_API_KEY = process.env.RESEND_API_KEY as string
 
 if (!RESEND_API_KEY) {
   throw new Error('RESEND_API_KEY is not set in environment variables')
@@ -14,7 +14,7 @@ const resend = new Resend(RESEND_API_KEY)
 const EMAIL_CONFIG = {
   from: 'Your Company <onboarding@resend.dev>',
   companyName: 'Your Company',
-  baseUrl: 'http://localhost:3000',
+  baseUrl: 'http://localhost:5173',
 }
 
 

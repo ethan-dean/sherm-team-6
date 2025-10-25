@@ -1,6 +1,9 @@
+import { config } from 'dotenv'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+config()
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY as string
 
 if (!GEMINI_API_KEY) {
   throw new Error('GEMINI_API_KEY is not set in environment variables')

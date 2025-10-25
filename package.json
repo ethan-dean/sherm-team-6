@@ -4,9 +4,9 @@
   "description": "LLM grader for system design interviews",
   "main": "backend/gemini-grader.ts",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 5173",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 5173",
     "test": "ts-node backend/gemini-grader.ts"
   },
   "dependencies": {
@@ -14,6 +14,7 @@
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^1.4.0",
     "@tailwindcss/postcss": "^4.1.16",
+    "dotenv": "^17.2.3",
     "next": "^16.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
