@@ -1,6 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const GEMINI_API_KEY = 'AIzaSyD-9-jec8yZmLVSzaVQjAHd6YFjipFFxm8'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+
+if (!GEMINI_API_KEY) {
+  throw new Error('GEMINI_API_KEY is not set in environment variables')
+}
 
 interface GradingInput {
   problemDescription: string

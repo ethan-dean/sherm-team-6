@@ -1,11 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { ProctoringFrame, ProctoringViolation } from '../frontend/types/proctoring'
+import { ProctoringFrame, ProctoringAnalysisResult } from '../types/proctoring'
 
-const GEMINI_API_KEY = 'AIzaSyD-9-jec8yZmLVSzaVQjAHd6YFjipFFxm8'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
+
+if (!GEMINI_API_KEY) {
+  throw new Error('GEMINI_API_KEY is not set in environment variables')
+}
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY)
 
-export async function analyzeFrame(frame:ProctoringFrame): Promise<ProctoringViolation[]> {
+export async function analyzeFrame(frame:ProctoringFrame): Promise<ProctoringAnalysisResult> {
     const model = genAI.getGenerativeModel({
         model: 'gemini-2.0-flash-exp',
         generationConfig: {
@@ -16,40 +20,29 @@ export async function analyzeFrame(frame:ProctoringFrame): Promise<ProctoringVio
 
     const imageData = frame.frame.replace(/^data:image\/\w+;base64,/, '')
     
-    const prompt = `You are a proctoring system analyzing a webcam frame from an online interview.
+    const prompt = `You are a proctoring AI analyzing a webcam frame from an online interview.
 
-    Analyze this image and detect any violations:
-    
-    **Violations to check:**
-    1. **multiple_faces** - More than one person visible (HIGH severity)
-    2. **no_face** - No person visible in frame (MEDIUM severity)
-    3. **looking_away** - Person not facing the camera/screen (LOW severity)
-    4. **phone_visible** - Mobile phone visible in frame (HIGH severity)
-    
-    **Instructions:**
-    - Be strict but fair
-    - Only flag clear violations (confidence > 0.7)
-    - If image quality is poor, ignore low-confidence detections
-    
-    **Output ONLY valid JSON:**
-    
-    {
-      "violations": [
-        {
-          "type": "multiple_faces|no_face|looking_away|phone_visible",
-          "severity": "low|medium|high",
-          "confidence": <number 0.0-1.0>,
-          "details": "<brief description of what you see>"
-        }
-      ]
-    }
-    
-    If NO violations detected, return:
-    {
-      "violations": []
-    }
-    
-    Output ONLY the JSON, nothing else.`
+Analyze this image and provide a SUSPICION SCORE from 0-100:
+- 0 = No issues, normal behavior
+- 1-30 = Minor concerns (slight movements, brief distractions)
+- 31-60 = Moderate suspicion (looking away, phone nearby, distracted)
+- 61-90 = High suspicion (multiple people, phone in hand, not looking at screen)
+- 91-100 = Critical violation (cheating detected, external assistance)
+
+Consider these factors:
+- Are they looking at the camera/screen?
+- Is anyone else visible?
+- Are there phones or devices visible?
+- Are they engaged or distracted?
+- Is their behavior appropriate for an interview?
+
+Output ONLY valid JSON:
+{
+  "suspicion_score": <number 0-100>,
+  "reasons": ["<reason 1>", "<reason 2>", ...]
+}
+
+If everything looks normal (score 0-30), reasons can be empty: {"suspicion_score": 0, "reasons": []}`
 
     try {
         const result = await model.generateContent([
@@ -62,18 +55,23 @@ export async function analyzeFrame(frame:ProctoringFrame): Promise<ProctoringVio
             }
         ])
         const jsonText = result.response.text()
-        console.log('Gemini proctoring response:', jsonText)
+        console.log('Gemini response:', jsonText)
 
         const analysis = JSON.parse(jsonText)
 
-        const violations = (analysis.violations || []).map((v:any) => ({
-            ...v,
-            timestamp: frame.timestamp
-        }))
+        console.log('Suspicion score:', analysis.suspicion_score)
 
-        return violations
+        return {
+            success: true,
+            suspicion_score: analysis.suspicion_score || 0,
+            reasons: analysis.reasons || []
+        }
     } catch (error: any) {
-        console.error("Frame analysis error: ", error)
-        return []
+        console.error("Frame analysis error:", error.message)
+        return {
+            success: false,
+            suspicion_score: 0,
+            reasons: ['Analysis failed']
+        }
     }
 }

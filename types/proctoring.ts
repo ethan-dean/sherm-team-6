@@ -5,14 +5,15 @@ export interface ProctoringViolation {
     details: string
     timestamp: number
   }
-  
+
   export interface ProctoringFrame {
     session_id: string
     frame: string // base64 image
     timestamp: number
   }
-  
+
   export interface ProctoringAnalysisResult {
     success: boolean
-    violations: ProctoringViolation[]
+    suspicion_score: number // 0-100
+    reasons: string[]
   }

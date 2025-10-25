@@ -37,10 +37,8 @@ export function ProctoringMonitor({
                 if (videoRef.current){
                     videoRef.current.srcObject = mediaStream
                 }
-
-                console.log('Proctoring started ')
             }   catch (err: any){
-                console.error('Camera access denied: ', err)
+                console.error('Camera access denied:', err)
                 setError('Camera access is required')
                 setIsActive(false)
             }    
@@ -58,7 +56,7 @@ export function ProctoringMonitor({
 
         const interval = setInterval(() => {
             captureAndAnalyze()
-        }, 10000)
+        }, 5000) // Changed from 10000ms (10 seconds) to 5000ms (5 seconds)
 
         return () => clearInterval(interval)
     }, [stream, isActive, sessionId])
@@ -66,8 +64,6 @@ export function ProctoringMonitor({
     useEffect(() => {
         function handleVisibilityChange() {
             if ( document.hidden){
-                console.warn('Tab switch detected')
-
                 fetch('/api/proctoring/violation', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
@@ -78,8 +74,8 @@ export function ProctoringMonitor({
                         timestamp: Date.now()
                     })
 
-                    
-                }).catch(err =>console.error('Failed to log tab switch: ',err))
+
+                }).catch(err => console.error('Failed to log tab switch:', err))
 
                 onViolation('tab_switch', 'low')
             }
@@ -104,8 +100,6 @@ export function ProctoringMonitor({
 
         const frameBase64 = canvas.toDataURL('image/jpeg', 0.6)
 
-        console.log('Capturing frame for anaylsis...')
-
         try {
             const response = await fetch('/api/proctoring/analyze', {
               method: 'POST',
@@ -119,13 +113,8 @@ export function ProctoringMonitor({
 
         const result = await response.json()
 
-        if ( result.violations && result.violations.length > 0){
-            console.warn('Violations Detected: ', result.violations)
-            result.violations.forEach((v: any) => {
-                onViolation(v.type, v.severity)
-            })
-        } else {
-            console.log('No violations detected')
+        if (result.suspicion_score > 30) {
+            onViolation(`suspicion_${result.suspicion_score}`, result.suspicion_score > 60 ? 'high' : 'medium')
         }
     } catch(error){
         console.error('Failed to analyze frame:', error)

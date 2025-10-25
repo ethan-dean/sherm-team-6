@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { analyzeFrame } from '../../../../../backend/proctoring-analyzer'
+import { analyzeFrame } from '@/backend/proctoring-analyzer'
 
 export async function POST(req: NextRequest){
     try {
@@ -13,27 +13,13 @@ export async function POST(req: NextRequest){
             )
         }
 
-        console.log(`Analyzing frame for session: ${session_id}`)
-
-        const violations = await analyzeFrame({
+        const result = await analyzeFrame({
             session_id,
             frame,
             timestamp
         })
 
-        if (violations.length > 0){
-            console.warn(`Violations detected for ${session_id}:`)
-            violations.forEach(v=>{
-                console.warn(`  - ${v.type} (${v.severity}, confidence: ${v.confidence}): ${v.details}`)
-            })
-        } else {
-            console.log(`No violations for ${session_id}`)
-        }
-
-        return NextResponse.json({
-            success: true,
-            violations
-        })
+        return NextResponse.json(result)
     } catch (error: any){
         console.error('Proctoring analysis error:', error)
         return NextResponse.json(
