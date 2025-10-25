@@ -1,3 +1,4 @@
+// Sidebar.tsx
 import React from "react";
 import { COMPONENT_TYPES } from "../constants";
 import type { ComponentKind, EdgeKind } from "../types";
@@ -8,8 +9,8 @@ const LineIcon = () => (
   </svg>
 );
 
-// flipped arrow direction (points left)
-const ArrowToSourceIcon = () => (
+// Arrow pointing right (i.e., toward target)
+const ArrowToTargetIcon = () => (
   <svg width="28" height="12" viewBox="0 0 28 12" aria-hidden>
     <line x1="2" y1="6" x2="22" y2="6" stroke="currentColor" strokeWidth="2" />
     <polygon points="22,2 26,6 22,10" fill="currentColor" />
@@ -41,7 +42,6 @@ export const Sidebar: React.FC<{
 
       <div className="mt-4 text-sm font-semibold">Edge Style</div>
 
-      {/* Evenly split buttons */}
       <div className="flex w-full rounded-md overflow-hidden border border-neutral-700">
         <button
           onClick={() => setEdgeKind("line")}
@@ -62,14 +62,14 @@ export const Sidebar: React.FC<{
               : "bg-neutral-900 text-neutral-300 hover:bg-neutral-800"
           }`}
         >
-          <ArrowToSourceIcon />
+          <ArrowToTargetIcon />
         </button>
       </div>
 
       <div className="mt-auto text-xs text-neutral-500 pt-3 border-t border-neutral-800">
         Drag a component onto the canvas.<br />
         Double-click a component to rename it.<br />
-        Connect by dragging from any side handle to any side handle.
+        Connect by dragging from any side handle (source) to any side handle (target).
       </div>
     </aside>
   );

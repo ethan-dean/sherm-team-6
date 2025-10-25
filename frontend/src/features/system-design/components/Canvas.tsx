@@ -12,31 +12,38 @@ import {
   useNodesState,
   useReactFlow,
   type Connection,
-  type Edge as RFEdge,
-  type Node as RFNode,
+  type NodeTypes,
 } from "@xyflow/react";
+import { useDiagramJSON, asSystemData, styleEdge, type MyNode, type MyEdge } from "../utils";
 import "@xyflow/react/dist/style.css";
 import "@/styles/reactflow-dark.css";
-import "@xyflow/react/dist/style.css";
 
 import { Sidebar } from "./Sidebar";
 import { SystemNode } from "./SystemNode";
 import { COMPONENT_TYPES } from "../constants";
-import { asSystemData, styleEdge } from "../utils";
 import type { ComponentKind, EdgeKind } from "../types";
 
-// keep node/edge loose to avoid version-specific type constraints
-type MyNode = RFNode;
-type MyEdge = RFEdge;
+// 🔌 ElevenLabs live sync (contextual_update)
+import { useDiagramElevenSync } from "@/hooks/useDiagramElevenSync";
 
 export const Canvas: React.FC = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState<MyNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<MyEdge>([]);
   const [edgeKind, setEdgeKind] = useState<EdgeKind>("arrow");
 
-  const rf = useReactFlow(); // no generics
+  const rf = useReactFlow<MyNode, MyEdge>();
+  const getDiagramJSON = useDiagramJSON();
+  (window as any).getDiagramJSON = getDiagramJSON;
 
-  // inject edit callbacks into node.data
+  // Provide your active ElevenLabs conversation WebSocket URL here.
+  // You can inject it via env var (Next.js inlines this at build) or set window.__ELEVEN_WS_URL at runtime.
+  const elevenWsUrl =
+    (typeof window !== "undefined" && (window as any).__ELEVEN_WS_URL) ||
+    (import.meta.env.VITE_ELEVEN_WS_URL as string) || "";
+
+  // Initializes WS and pushes debounced contextual_update messages when scheduled.
+  const { schedule, pushNow } = useDiagramElevenSync({ wsUrl: elevenWsUrl, debounceMs: 800 });
+
   const withEditFns = useCallback(
     (node: MyNode): MyNode => {
       const onStartEdit = (id: string) =>
@@ -47,9 +54,7 @@ export const Canvas: React.FC = () => {
       const onCommitLabel = (id: string, next: string) =>
         setNodes((ns) =>
           ns.map((n) =>
-            n.id === id
-              ? { ...n, data: { ...asSystemData(n.data), label: next, editing: false } }
-              : n
+            n.id === id ? { ...n, data: { ...asSystemData(n.data), label: next, editing: false } } : n
           )
         );
 
@@ -71,15 +76,16 @@ export const Canvas: React.FC = () => {
     [setNodes]
   );
 
-  // DnD: start + over + drop
   const onDragStart = (e: React.DragEvent, kind: ComponentKind) => {
     e.dataTransfer.setData("component-kind", kind);
     e.dataTransfer.effectAllowed = "move";
   };
+
   const onDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
   };
+
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const kind = e.dataTransfer.getData("component-kind") as ComponentKind | "";
@@ -98,23 +104,18 @@ export const Canvas: React.FC = () => {
     setNodes((ns) => [...ns, newNode]);
   };
 
-  // Connect edges
   const onConnect = useCallback(
     (params: Connection) => {
       if (!params.source || !params.target) return;
-
-      const newConnection: Connection = {
-        source: params.source,
-        target: params.target,
-        sourceHandle: params.sourceHandle,
-        targetHandle: params.targetHandle,
-      };
 
       setEdges((es) =>
         addEdge(
           {
             id: crypto.randomUUID(),
-            ...newConnection,
+            source: params.source,
+            target: params.target,
+            sourceHandle: params.sourceHandle,
+            targetHandle: params.targetHandle,
             ...styleEdge(edgeKind),
           },
           es
@@ -124,12 +125,10 @@ export const Canvas: React.FC = () => {
     [edgeKind, setEdges]
   );
 
-  // Update existing edges when edgeKind changes
   useEffect(() => {
     setEdges((es) => es.map((e) => ({ ...e, ...styleEdge(edgeKind) })));
   }, [edgeKind, setEdges]);
 
-  // Double-click via ReactFlow handler (in addition to node's own dblclick)
   const onNodeDoubleClick = useCallback(
     (_evt: React.MouseEvent, node: MyNode) => {
       setNodes((ns) =>
@@ -141,20 +140,24 @@ export const Canvas: React.FC = () => {
     [setNodes, withEditFns]
   );
 
-  // Ensure callbacks exist on all nodes (handles pasted/loaded nodes too)
   useEffect(() => {
     setNodes((ns) => ns.map((n) => withEditFns(n)));
   }, [withEditFns, setNodes]);
 
-  // IMPORTANT: avoid NodeTypes to dodge width/height constraint issues
-  const nodeTypes: Record<string, React.ComponentType<any>> = { system: SystemNode };
+  // 🔁 Push to ElevenLabs whenever nodes/edges change (debounced)
+  useEffect(() => {
+    if (!elevenWsUrl) return; // no-op if WS URL not provided
+    schedule();
+  }, [nodes, edges, schedule, elevenWsUrl]);
+
+  const nodeTypes = { system: SystemNode } satisfies NodeTypes;
 
   return (
     <div className="w-full h-screen grid grid-cols-[260px_1fr] bg-neutral-950 text-neutral-100">
       <Sidebar edgeKind={edgeKind} setEdgeKind={setEdgeKind} onDragStart={onDragStart} />
 
       <div className="relative h-full">
-        <ReactFlow
+        <ReactFlow<MyNode, MyEdge>
           nodes={nodes}
           edges={edges}
           onNodesChange={onNodesChange}
@@ -164,44 +167,37 @@ export const Canvas: React.FC = () => {
           onDragOver={onDragOver}
           onDrop={onDrop}
           onNodeDoubleClick={onNodeDoubleClick}
-          connectionMode={ConnectionMode.Strict}
+          connectionMode={ConnectionMode.Loose}
           connectionLineType={ConnectionLineType.SmoothStep}
+          isValidConnection={(c) =>
+            !!c.source && !!c.target && c.source !== c.target && !!c.sourceHandle && !!c.targetHandle
+          }
           className="bg-neutral-900"
           style={{ width: "100%", height: "100%" }}
         >
-          {/* 🌑 DARK THEME MINIMAP */}
           <MiniMap
             pannable
             zoomable
-            style={{
-              background: "#0b0f19",
-              border: "1px solid #262b3a",
-              borderRadius: "6px",
-            }}
+            style={{ background: "#0b0f19", border: "1px solid #262b3a", borderRadius: "6px" }}
             maskColor="rgba(2, 6, 23, 0.6)"
-            nodeColor={() => "#334155"} // slate-700
-            nodeStrokeColor={() => "#94a3b8"} // slate-300
+            nodeColor={() => "#334155"}
+            nodeStrokeColor={() => "#94a3b8"}
             nodeBorderRadius={2}
           />
-
-          {/* 🌑 DARK THEME CONTROLS */}
           <Controls
             position="bottom-left"
-            style={{
-              background: "#111827",
-              border: "1px solid #374151",
-              borderRadius: "6px",
-              boxShadow: "none",
-            }}
+            style={{ background: "#111827", border: "1px solid #374151", borderRadius: "6px", boxShadow: "none" }}
           />
-
-          <Background
-            gap={24}
-            variant={BackgroundVariant.Dots}
-            color="#334155"
-            size={1}
-          />
+          <Background gap={24} variant={BackgroundVariant.Dots} color="#334155" size={1} />
         </ReactFlow>
+
+        {/* Optional: manual "sync now" button for testing */}
+        {/* <button
+          onClick={pushNow}
+          className="absolute bottom-4 right-4 px-3 py-2 rounded bg-neutral-700 hover:bg-neutral-600"
+        >
+          Sync to ElevenLabs
+        </button> */}
       </div>
     </div>
   );

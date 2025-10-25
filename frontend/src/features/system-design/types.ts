@@ -1,4 +1,5 @@
-export type EdgeKind = "line" | "arrow"; // arrow = arrow to SOURCE (marker at start)
+// types.ts
+export type EdgeKind = "line" | "arrow"; // "arrow" = arrow pointing to target
 
 export type ComponentKind =
   | "API Gateway"
@@ -10,7 +11,8 @@ export type ComponentKind =
   | "Queue"
   | "Cache";
 
-export interface SystemNodeData {
+// ✅ Extend Record<string, unknown> to satisfy React Flow's Node<Data> constraint
+export interface SystemNodeData extends Record<string, unknown> {
   label: string;
   kind: ComponentKind;
   editing?: boolean;
