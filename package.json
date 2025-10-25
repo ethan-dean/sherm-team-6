@@ -1,0 +1,32 @@
+{
+  "name": "sherm-team-6",
+  "version": "1.0.0",
+  "description": "LLM grader for system design interviews",
+  "main": "backend/gemini-grader.ts",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "ts-node backend/gemini-grader.ts"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@react-email/components": "^0.5.7",
+    "@react-email/render": "^1.4.0",
+    "@tailwindcss/postcss": "^4.1.16",
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "resend": "^6.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.16",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
