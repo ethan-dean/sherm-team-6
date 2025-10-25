@@ -9,6 +9,7 @@ import SystemDesignInterview from './pages/Interview/SystemDesignInterview';
 import TechnicalInterview from './pages/Interview/TechnicalInterview';
 import BehavioralInterview from './pages/Interview/BehavioralInterview';
 import AssessmentFinishedPage from './pages/Interview/AssessmentFinishedPage';
+import PreInterview from './pages/Interview/PreInterview';
 import PracticeMode from './pages/Practice/PracticeMode';
 import { authService } from './services/auth.service';
 
@@ -58,10 +59,12 @@ function App() {
           />
 
           {/* Interview Routes */}
+          <Route path="/interview/:assessmentId" element={<PreInterview />} />
           <Route path="/interview/system-design/:interviewId" element={<SystemDesignInterviewPage />} />
+          <Route path="/interview/finished" element={<AssessmentFinishedPage />} />
+
           <Route path="/interview/technical/:interviewId" element={<TechnicalInterview />} />
           <Route path="/interview/behavioral/:interviewId" element={<BehavioralInterview />} />
-          <Route path="/interview/finished" element={<AssessmentFinishedPage />} />
 
           <Route path="/test" element={<SystemDesignInterview />} />
 
