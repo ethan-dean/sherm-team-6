@@ -98,6 +98,7 @@ export const Canvas: React.FC = () => {
       id,
       type: "system",
       position,
+      dragHandle: ".drag-surface",
       data: { label: COMPONENT_TYPES.labelFor(kind), kind, editing: false },
     } as MyNode);
 
