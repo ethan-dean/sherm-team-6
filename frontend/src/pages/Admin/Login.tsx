@@ -1,14 +1,9 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Paper,
-} from '@mui/material';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from '../../services/auth.service';
 
 export default function Login() {
@@ -34,73 +29,67 @@ export default function Login() {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <Card className="w-full max-w-md shadow-2xl">
+        <CardHeader className="space-y-1 text-center">
+          <CardTitle className="text-3xl font-bold tracking-tight">
             AI Interview OA
-          </Typography>
-          <Typography component="h2" variant="h5" align="center" gutterBottom>
-            Recruiter Login
-          </Typography>
-
+          </CardTitle>
+          <CardDescription className="text-base">
+            Recruiter Login Portal
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4">
               {error}
-            </Alert>
+            </div>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="recruiter@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <Button 
+              type="submit" 
+              className="w-full" 
+              size="lg"
               disabled={loading}
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
-              <Link to="/register" style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="primary">
-                  Don't have an account? Register
-                </Typography>
-              </Link>
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+          </form>
+
+          <div className="mt-6 text-center text-sm">
+            <span className="text-gray-600">Don't have an account? </span>
+            <Link to="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+              Register
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
