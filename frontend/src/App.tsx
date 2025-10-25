@@ -7,6 +7,7 @@ import OAResults from './pages/Admin/OAResults';
 import SystemDesignInterview from './pages/Interview/SystemDesignInterview';
 import TechnicalInterview from './pages/Interview/TechnicalInterview';
 import BehavioralInterview from './pages/Interview/BehavioralInterview';
+import PreInterview from './pages/Interview/PreInterview';
 import PracticeMode from './pages/Practice/PracticeMode';
 import { authService } from './services/auth.service';
 
@@ -56,6 +57,7 @@ function App() {
           />
 
           {/* Interview Routes */}
+          <Route path="/interview/:assessmentId" element={<PreInterview />} />
           <Route path="/interview/system-design/:interviewId" element={<SystemDesignInterview />} />
           <Route path="/interview/technical/:interviewId" element={<TechnicalInterview />} />
           <Route path="/interview/behavioral/:interviewId" element={<BehavioralInterview />} />
