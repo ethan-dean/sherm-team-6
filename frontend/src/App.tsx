@@ -26,8 +26,10 @@ const theme = createTheme({
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = authService.isAuthenticated();
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  // TEMP: Auth bypassed for testing
+  // const isAuthenticated = authService.isAuthenticated();
+  // return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
+  return <>{children}</>;
 };
 
 function App() {

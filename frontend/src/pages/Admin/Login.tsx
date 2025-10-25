@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from '../../services/auth.service';
+import DarkVeil from '../../components/effects/DarkVeil';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,13 +30,28 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-white">
+      <div className="absolute inset-0">
+        <DarkVeil
+          hueShift={1000}
+          speed={0.3}
+          warpAmount={0.2}
+        />
+      </div>
+      
+      <Card className="w-full max-w-md shadow-2xl relative z-10 bg-[rgb(0_0_0_/_0.45)] backdrop-blur-sm">
         <CardHeader className="space-y-1 text-center">
-          <CardTitle className="text-3xl font-bold tracking-tight">
-            AI Interview OA
+          <div className="flex justify-center mb-4">
+            <img
+              src="/SystemaLogo.png"
+              alt="SystemUOA Logo"
+              className="h-20 w-auto"
+            />
+          </div>
+          <CardTitle className="text-3xl font-bold tracking-tight text-white">
+            SystemUOA
           </CardTitle>
-          <CardDescription className="text-base">
+          <CardDescription className="text-base text-white">
             Recruiter Login Portal
           </CardDescription>
         </CardHeader>
@@ -48,11 +64,12 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="text-white">Email Address</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="recruiter@company.com"
+                className="border-white text-white placeholder:text-gray-400"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -61,20 +78,21 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-white">Password</Label>
               <Input
                 id="password"
                 type="password"
                 placeholder="••••••••"
+                className="border-white text-white placeholder:text-gray-400"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
+            <Button
+              type="submit"
+              className="w-full text-white"
               size="lg"
               disabled={loading}
             >
@@ -83,8 +101,8 @@ export default function Login() {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span className="text-gray-600">Don't have an account? </span>
-            <Link to="/register" className="text-blue-600 hover:text-blue-800 font-medium">
+            <span className="text-white">Don't have an account? </span>
+            <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium">
               Register
             </Link>
           </div>
