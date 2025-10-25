@@ -139,22 +139,17 @@ const SystemDesignInterviewPage: React.FC = () => {
 
   return (
     <div className="relative h-screen">
-      {/* Timer Display - Always visible */}
-      <div className="fixed top-0 left-0 right-0 z-40 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      {/* Timer - Floating above AI widget in bottom right */}
+      <div className="fixed bottom-40 right-8 z-40">
+        <div className="bg-black text-white shadow-md rounded-2xl px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              {timeRemaining !== null && (
-                <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              )}
-              <span className="font-semibold text-lg">System Design Interview</span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
+            {timeRemaining !== null && (
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+            )}
             <div className="text-right">
-              <div className="text-xs opacity-90">Time Remaining</div>
-              <div className={`text-2xl font-mono font-bold ${
-                timeRemaining !== null && timeRemaining < 5 * 60 * 1000 ? 'text-red-200 animate-pulse' : ''
+              <div className="text-xs opacity-70">Time Remaining</div>
+              <div className={`text-xl font-mono font-bold ${
+                timeRemaining !== null && timeRemaining < 5 * 60 * 1000 ? 'text-red-400 animate-pulse' : ''
               }`}>
                 {formatTime(timeRemaining !== null ? timeRemaining : INTERVIEW_DURATION_MS)}
               </div>
@@ -163,16 +158,14 @@ const SystemDesignInterviewPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ElevenLabs Widget */}
-      <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999 }}>
-        <elevenlabs-convai
-          ref={widgetRef as any}
-          agent-id="agent_5401k89w0ehgejy8z1bghfxrc5cm"
-        />
-      </div>
+      {/* ElevenLabs Widget - Bottom right (default position) */}
+      <elevenlabs-convai
+        ref={widgetRef as any}
+        agent-id="agent_5401k89w0ehgejy8z1bghfxrc5cm"
+      />
 
       {/* Main Content */}
-      <div className="pt-16">
+      <div>
         <SystemDesignInterview />
       </div>
     </div>
