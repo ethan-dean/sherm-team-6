@@ -15,7 +15,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
 import ProctoringSuspicionChart from './components/admin/ProctoringSuspicionChart';
-import TestLineChart from './components/TestLineChart';
 
 const theme = createTheme({
   palette: {

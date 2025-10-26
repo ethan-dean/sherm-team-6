@@ -309,7 +309,7 @@ const SystemDesignInterviewPage: React.FC = () => {
         {/* Status indicator */}
         {conversation.status !== 'disconnected' && (
           <div className="bg-black/80 text-white text-sm px-4 py-2 rounded-xl text-center">
-            {conversation.isSpeaking ? '🎙️ AI is speaking...' : '👂 Listening...'}
+            {conversation.isSpeaking ? 'AI is speaking...' : 'Listening...'}
           </div>
         )}
       </div>
