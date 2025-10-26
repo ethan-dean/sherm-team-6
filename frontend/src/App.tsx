@@ -2,10 +2,10 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { Toaster } from 'sonner';
-import Login from './pages/admin/Login';
-import Register from './pages/admin/Register';
-import Dashboard from './pages/admin/Dashboard';
-import OAResults from './pages/admin/OAResults';
+import Login from './pages/Admin/Login';
+import Register from './pages/Admin/Register';
+import Dashboard from './pages/Admin/Dashboard';
+import OAResults from './pages/Admin/OAResults';
 import SystemDesignInterviewPage from './pages/Interview/SystemDesignInterviewPage';
 import SystemDesignInterview from './pages/Interview/SystemDesignInterview';
 import AssessmentFinishedPage from './pages/Interview/AssessmentFinishedPage';
