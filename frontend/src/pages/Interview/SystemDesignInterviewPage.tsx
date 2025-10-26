@@ -1,28 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useConversation } from '@elevenlabs/react';
 import SystemDesignInterview from './SystemDesignInterview';
 import { interviewService } from '@/services/interview.service';
-
-// Extend HTMLElement to include ElevenLabs widget properties
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'elevenlabs-convai': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & {
-        'agent-id': string;
-      };
-    }
-  }
-}
 
 const INTERVIEW_DURATION_MS = 45 * 60 * 1000; // 45 minutes
 
 const SystemDesignInterviewPage: React.FC = () => {
   const { interviewId } = useParams<{ interviewId: string }>();
   const navigate = useNavigate();
-  const widgetRef = useRef<HTMLElement>(null);
-  const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const conversation = useConversation();
+  const timerIntervalRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const hasSubmittedRef = useRef(false); // Prevent duplicate submissions
+  const prevStatusRef = useRef<string>(conversation.status);
 
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
@@ -90,56 +81,74 @@ const SystemDesignInterviewPage: React.FC = () => {
     }
   };
 
-  // Load ElevenLabs script
+  // Handle conversation start/stop with microphone permissions
+  const handleStartConversation = async () => {
+    // Check and request microphone access
+    try {
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (error) {
+      console.error('[Microphone] Access denied:', error);
+      alert('Please enable microphone access to start the interview.');
+      return;
+    }
+
+    // Start the session with ElevenLabs agent
+    try {
+      await conversation.startSession({
+        agentId: 'agent_5401k89w0ehgejy8z1bghfxrc5cm',
+        connectionType: 'webrtc',
+      });
+    } catch (error) {
+      console.error('[Conversation] Failed to start session:', error);
+    }
+  };
+
+  const handleStopConversation = async () => {
+    await conversation.endSession();
+  };
+
+  // Monitor conversation status to control timer
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/@elevenlabs/convai-widget-embed';
-    script.async = true;
-    document.head.appendChild(script);
+    // Capture timer state at the start, before any potential cleanup
+    const hasTimer = timerIntervalRef.current !== null;
+    const prevStatus = prevStatusRef.current;
+    const currentStatus = conversation.status;
 
-    return () => {
-      if (document.head.contains(script)) {
-        document.head.removeChild(script);
-      }
-    };
-  }, []);
+    const isSessionActive = currentStatus === 'connected' || currentStatus === 'connecting';
+    const wasSessionActive = prevStatus === 'connected' || prevStatus === 'connecting' || prevStatus === 'disconnecting';
 
-  // Poll widget button to detect call state
+    // Session started (connected/connecting) - start timer
+    if (isSessionActive && !hasTimer) {
+      startTimer();
+    }
+
+    // Session ended (disconnecting/disconnected after being active) - stop timer and submit
+    if (
+      (currentStatus === 'disconnecting' || currentStatus === 'disconnected') &&
+      wasSessionActive &&
+      hasTimer &&
+      !hasSubmittedRef.current
+    ) {
+      stopTimer();
+      submitInterview();
+    }
+
+    // Update previous status
+    prevStatusRef.current = currentStatus;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation.status, interviewId]);
+
+  // Cleanup timer on component unmount
   useEffect(() => {
-    const pollInterval = setInterval(() => {
-      const widget = widgetRef.current;
-      if (!widget?.shadowRoot) return;
-
-      const button = widget.shadowRoot.querySelector('button');
-      const buttonText = button?.textContent?.trim() || '';
-
-      // Call is active when button says "End Interview"
-      if (buttonText === 'End Interview') {
-        if (!timerIntervalRef.current) {
-          console.log('[Poll] Call active - starting timer');
-          startTimer();
-        }
-      }
-      // Call ended when button says "Start Interview"
-      else if (buttonText === 'Start Interview') {
-        if (timerIntervalRef.current) {
-          console.log('[Poll] Call ended - stopping timer');
-          stopTimer();
-          submitInterview();
-        }
-      }
-    }, 1000);
-
     return () => {
-      clearInterval(pollInterval);
       stopTimer();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [interviewId]);
+  }, []);
 
   return (
     <div className="relative h-screen">
-      {/* Timer - Floating above AI widget in bottom right */}
+      {/* Timer - Bottom right corner, above interview controls */}
       <div className="fixed bottom-40 right-8 z-40">
         <div className="bg-black text-white shadow-md rounded-2xl px-4 py-3">
           <div className="flex items-center gap-3">
@@ -158,11 +167,38 @@ const SystemDesignInterviewPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ElevenLabs Widget - Bottom right (default position) */}
-      <elevenlabs-convai
-        ref={widgetRef as any}
-        agent-id="agent_5401k89w0ehgejy8z1bghfxrc5cm"
-      />
+      {/* Interview Control Buttons - Bottom right */}
+      <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
+        {conversation.status === 'disconnected' ? (
+          <button
+            onClick={handleStartConversation}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-4 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 active:scale-95"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 bg-white rounded-full" />
+              <span className="text-lg">Start Interview</span>
+            </div>
+          </button>
+        ) : (
+          <button
+            onClick={handleStopConversation}
+            disabled={conversation.status === 'disconnecting'}
+            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-semibold px-6 py-4 rounded-2xl shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105 active:scale-95"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 bg-white rounded-full animate-pulse" />
+              <span className="text-lg">End Interview</span>
+            </div>
+          </button>
+        )}
+
+        {/* Status indicator */}
+        {conversation.status !== 'disconnected' && (
+          <div className="bg-black/80 text-white text-sm px-4 py-2 rounded-xl text-center">
+            {conversation.isSpeaking ? '🎙️ AI is speaking...' : '👂 Listening...'}
+          </div>
+        )}
+      </div>
 
       {/* Main Content */}
       <div>

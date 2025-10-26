@@ -41,8 +41,8 @@ export const Canvas: React.FC = () => {
     (typeof window !== "undefined" && (window as any).__ELEVEN_WS_URL) ||
     (import.meta.env.VITE_ELEVEN_WS_URL as string) || "";
 
-  // Initializes WS and pushes debounced contextual_update messages when scheduled.
-  const { schedule, pushNow } = useDiagramElevenSync({ wsUrl: elevenWsUrl, debounceMs: 800 });
+  // Initializes WS and monitors for diagram changes with two-state diff detection
+  const { start, stop, pushNow } = useDiagramElevenSync({ wsUrl: elevenWsUrl, debounceMs: 800 });
 
   const withEditFns = useCallback(
     (node: MyNode): MyNode => {
@@ -145,11 +145,13 @@ export const Canvas: React.FC = () => {
     setNodes((ns) => ns.map((n) => withEditFns(n)));
   }, [withEditFns, setNodes]);
 
-  // 🔁 Push to ElevenLabs whenever nodes/edges change (debounced)
+  // 🔁 Start monitoring diagram changes when component mounts
   useEffect(() => {
     if (!elevenWsUrl) return; // no-op if WS URL not provided
-    schedule();
-  }, [nodes, edges, schedule, elevenWsUrl]);
+    start();
+    return () => stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [elevenWsUrl]);
 
   const nodeTypes = { system: SystemNode } satisfies NodeTypes;
 
