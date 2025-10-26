@@ -26,6 +26,16 @@ export default function Dashboard() {
   const [problemSortBy, setProblemSortBy] = useState<"asc" | "desc">("asc");
   const [sendingId, setSendingId] = useState<string | null>(null);
 
+  // Disable overscroll on mount
+  useEffect(() => {
+    document.body.style.overscrollBehavior = 'none';
+    document.documentElement.style.overscrollBehavior = 'none';
+    return () => {
+      document.body.style.overscrollBehavior = 'auto';
+      document.documentElement.style.overscrollBehavior = 'auto';
+    };
+  }, []);
+
   // Load data
   const reloadProblems = async () => setProblems(await fetchProblems());
   const reloadAssessments = async () =>
@@ -133,6 +143,7 @@ export default function Dashboard() {
           "linear-gradient(135deg, #1a0b14 0%, #0a0a0a 50%, #120520 100%)",
         position: "relative",
         overflow: "auto",
+        overscrollBehavior: "none",
       }}
     >
       {/* bg */}

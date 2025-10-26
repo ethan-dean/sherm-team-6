@@ -17,12 +17,6 @@ type Props = {
   threshold?: number;
 };
 
-const customize = {
-  height: 350,
-  hideLegend: true,
-  experimentalFeatures: { preferStrictDomainInLineCharts: true },
-};
-
 export default function ProctoringSuspicionChart({
   sessionId,
   assessmentId,
@@ -60,15 +54,14 @@ export default function ProctoringSuspicionChart({
       (rows ?? []).map((r) => ({
         time: new Date(Number(r.timestamp)),
         score: typeof r.suspicion_score === "number" ? r.suspicion_score : 0,
-        reasons: Array.isArray(r.reasons) ? (r.reasons as string[]) : [],
       })),
     [rows]
   );
 
   const valueFormatter = (_value: number | null, ctx: any) => {
     const idx = ctx?.dataIndex ?? 0;
-    const entry = dataset[idx];
-    const reasons = entry?.reasons ?? [];
+    const row = rows[idx];
+    const reasons = row && Array.isArray(row.reasons) ? (row.reasons as string[]) : [];
     if (!reasons.length) return "No suspicious behavior detected.";
     return reasons.map((r) => `• ${r}`).join("\n");
   };
@@ -88,7 +81,6 @@ export default function ProctoringSuspicionChart({
         {
           min: 0,
           max: 100,
-          width: 50,
           colorMap: {
             type: "piecewise",
             thresholds: [threshold],
@@ -117,7 +109,6 @@ export default function ProctoringSuspicionChart({
           },
         },
       }}
-      {...customize}
     />
   );
 }

@@ -30,7 +30,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-white">
+    <div className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden">
       <div className="absolute inset-0">
         <DarkVeil
           hueShift={1000}
