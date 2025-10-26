@@ -1,13 +1,21 @@
-// src/components/admin/ProctoringSuspicionChart.tsx
 import * as React from "react";
 import { useEffect, useMemo, useState } from "react";
-import { LineChart } from "@mui/x-charts/LineChart";
+import {
+  LineChart as RLineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ReferenceArea,
+  ResponsiveContainer,
+} from "recharts";
 import { supabase } from "@/lib/supabase";
 
 type FrameRow = {
-  timestamp: number | string;
+  timestamp: number;             // bigint in DB; comes back as number in JS client
   suspicion_score: number | null;
-  reasons: unknown;
+  reasons: unknown;              // jsonb (array)
 };
 
 type Props = {
@@ -16,6 +24,38 @@ type Props = {
   height?: number;
   threshold?: number;
 };
+
+function formatReasons(reasons: unknown) {
+  const arr = Array.isArray(reasons) ? (reasons as unknown[]) : [];
+  if (!arr.length) return "No suspicious behavior detected.";
+  return arr.map((r) => `• ${String(r)}`).join("\n");
+}
+
+// Recharts tooltip content
+function TooltipContent({ active, payload }: any) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0]?.payload;
+  const time = p?.time instanceof Date ? p.time.toLocaleTimeString() : "";
+  const score = p?.score ?? 0;
+  const reasonsText = formatReasons(p?.reasons);
+  return (
+    <div
+      style={{
+        background: "rgba(0,0,0,0.9)",
+        border: "1px solid rgba(98, 0, 69, 0.5)",
+        borderRadius: 8,
+        padding: 10,
+        color: "white",
+        maxWidth: 360,
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      <div style={{ fontWeight: 600, marginBottom: 6 }}>{time}</div>
+      <div style={{ marginBottom: 6 }}>Suspicion: {score}</div>
+      <div>{reasonsText}</div>
+    </div>
+  );
+}
 
 export default function ProctoringSuspicionChart({
   sessionId,
@@ -29,9 +69,10 @@ export default function ProctoringSuspicionChart({
   useEffect(() => {
     (async () => {
       setLoading(true);
+
       let q = supabase
         .from("proctoring_frames")
-        .select("timestamp,suspicion_score,reasons")
+        .select<"timestamp,suspicion_score,reasons", FrameRow>("timestamp,suspicion_score,reasons")
         .order("timestamp", { ascending: true });
 
       if (sessionId) q = q.eq("session_id", sessionId);
@@ -43,6 +84,8 @@ export default function ProctoringSuspicionChart({
         console.error("Failed to load proctoring_frames:", error);
         setRows([]);
       } else {
+        // Optional: peek at a few rows during dev
+        console.log("frames sample", data?.slice(0, 3));
         setRows(data ?? []);
       }
       setLoading(false);
@@ -52,63 +95,38 @@ export default function ProctoringSuspicionChart({
   const dataset = useMemo(
     () =>
       (rows ?? []).map((r) => ({
-        time: new Date(Number(r.timestamp)),
+        time: new Date(Number(r.timestamp)), // from bigint (ms) to Date
         score: typeof r.suspicion_score === "number" ? r.suspicion_score : 0,
+        reasons: r.reasons,
       })),
     [rows]
   );
 
-  const valueFormatter = (_value: number | null, ctx: any) => {
-    const idx = ctx?.dataIndex ?? 0;
-    const row = rows[idx];
-    const reasons = row && Array.isArray(row.reasons) ? (row.reasons as string[]) : [];
-    if (!reasons.length) return "No suspicious behavior detected.";
-    return reasons.map((r) => `• ${r}`).join("\n");
-  };
-
+  // Recharts expects primitive values for axis labels; we’ll format Dates in the tick formatter.
   return (
-    <LineChart
-      height={height}
-      xAxis={[
-        {
-          dataKey: "time",
-          scaleType: "time",
-          valueFormatter: (d: Date) =>
-            d instanceof Date ? d.toLocaleTimeString() : String(d),
-        },
-      ]}
-      yAxis={[
-        {
-          min: 0,
-          max: 100,
-          colorMap: {
-            type: "piecewise",
-            thresholds: [threshold],
-            colors: ["rgba(25,118,210,0.25)", "rgba(211,47,47,0.35)"],
-          },
-        },
-      ]}
-      series={[
-        {
-          dataKey: "score",
-          showMark: false,
-          area: true,
-          color: "#1976d2",
-          valueFormatter,
-        },
-      ]}
-      dataset={dataset}
-      grid={{ vertical: true, horizontal: true }}
-      slotProps={{
-        tooltip: {
-          trigger: "axis",
-          sx: {
-            maxWidth: 360,
-            whiteSpace: "pre-wrap",
-            overflow: "auto",
-          },
-        },
-      }}
-    />
+    <div style={{ width: "100%", height }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <RLineChart data={dataset} margin={{ top: 10, right: 20, bottom: 10, left: -10 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.2)" />
+          <XAxis
+            dataKey="time"
+            tickFormatter={(d: Date) => (d instanceof Date ? d.toLocaleTimeString() : String(d))}
+            stroke="rgba(255,255,255,0.7)"
+          />
+          <YAxis domain={[0, 100]} stroke="rgba(255,255,255,0.7)" />
+          <Tooltip content={<TooltipContent />} />
+          {/* Shade above threshold */}
+          <ReferenceArea y1={threshold} y2={100} fill="rgba(211,47,47,0.35)" strokeOpacity={0} />
+          <Line
+            type="monotone"
+            dataKey="score"
+            stroke="#90caf9"
+            strokeWidth={3}
+            dot={false}
+            isAnimationActive={false}
+          />
+        </RLineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
