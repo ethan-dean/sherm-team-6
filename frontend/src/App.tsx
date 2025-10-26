@@ -1,10 +1,10 @@
 // src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
-import Login from './pages/Admin/Login';
-import Register from './pages/Admin/Register';
-import Dashboard from './pages/Admin/Dashboard';
-import OAResults from './pages/Admin/OAResults';
+import Login from './pages/admin/Login';
+import Register from './pages/admin/Register';
+import Dashboard from './pages/admin/Dashboard';
+import OAResults from './pages/admin/OAResults';
 import SystemDesignInterviewPage from './pages/Interview/SystemDesignInterviewPage';
 import SystemDesignInterview from './pages/Interview/SystemDesignInterview';
 import AssessmentFinishedPage from './pages/Interview/AssessmentFinishedPage';
@@ -12,6 +12,9 @@ import PreInterview from './pages/Interview/PreInterview';
 import ProtectedRoute from './components/ProtectedRoute';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
+
+import ProctoringSuspicionChart from './components/admin/ProctoringSuspicionChart';
+import TestLineChart from './components/TestLineChart';
 
 const theme = createTheme({
   palette: {
@@ -62,7 +65,7 @@ function App() {
             element={<SystemDesignInterviewPage />}
           />
           <Route path="/interview/finished" element={<AssessmentFinishedPage />} />
-          <Route path="/test" element={<SystemDesignInterview />} />
+          <Route path="/test" element={<ProctoringSuspicionChart />} />
 
           {/* Default Redirect */}
           <Route path="/" element={<RootRedirect />} />
