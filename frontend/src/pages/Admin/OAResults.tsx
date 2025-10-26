@@ -671,16 +671,6 @@ export default function OAResults() {
                     '&::-webkit-scrollbar-thumb': { background: 'rgba(98, 0, 69, 0.5)', borderRadius: 2, '&:hover': { background: 'rgba(98, 0, 69, 0.7)' } }
                   }}
                 >
-                  {results.suspicion > 50 && (
-                    <Box sx={{ mb: 3, p: 2, bgcolor: 'rgba(255, 152, 0, 0.2)', border: '1px solid rgba(255, 152, 0, 0.4)', borderRadius: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#ff9800' }}>
-                        ⚠️ Suspicion Alert
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-                        Suspicion level: {results.suspicion}% - This assessment may require manual review.
-                      </Typography>
-                    </Box>
-                  )}
                   <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
                     {results.summary}
                   </Typography>
