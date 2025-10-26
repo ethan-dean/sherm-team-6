@@ -215,33 +215,110 @@ export default function Dashboard() {
   });
 
   return (
-    <>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            SystemUOA - Admin Dashboard
-          </Typography>
-          <Button color="inherit" onClick={handleLogout}>
-            Logout
-          </Button>
-        </Toolbar>
-      </AppBar>
+    <Box sx={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1a0b14 0%, #0a0a0a 50%, #120520 100%)',
+      position: 'relative',
+      overflow: 'auto'
+    }}>
+      {/* Subtle background pattern */}
+      <Box sx={{
+        position: 'fixed',
+        inset: 0,
+        backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(98, 0, 69, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(98, 0, 69, 0.15) 0%, transparent 50%)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
 
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-        <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' } }}>
+      <Box sx={{ position: 'relative', zIndex: 10 }}>
+        <AppBar
+          position="static"
+          elevation={0}
+          sx={{
+            bgcolor: 'rgba(0, 0, 0, 0.4)',
+            backdropFilter: 'blur(20px)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.1)'
+          }}
+        >
+          <Toolbar sx={{ py: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1, gap: 2 }}>
+              <img
+                src="/SystemaLogo.png"
+                alt="Systema Logo"
+                style={{ height: '45px', width: 'auto' }}
+              />
+              <Box>
+                <Typography variant="h5" component="div" sx={{ fontWeight: 600, letterSpacing: 0.5 }}>
+                  Systema
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                  Admin Dashboard
+                </Typography>
+              </Box>
+            </Box>
+            <Button
+              color="inherit"
+              onClick={handleLogout}
+              sx={{
+                borderRadius: 2,
+                px: 3,
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                '&:hover': {
+                  bgcolor: 'rgba(98, 0, 69, 0.3)',
+                  borderColor: 'rgba(98, 0, 69, 0.5)'
+                }
+              }}
+            >
+              Logout
+            </Button>
+          </Toolbar>
+        </AppBar>
+
+        <Container maxWidth="xl" sx={{ mt: 5, mb: 6, px: 4 }}>
+        <Box sx={{ display: 'flex', gap: 4, flexDirection: { xs: 'column', lg: 'row' } }}>
           {/* Problem List Section */}
           <Box sx={{ flex: 1 }}>
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                <Typography variant="h5">
-                  Problem List ({problems.length})
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                height: '100%',
+                background: 'rgba(20, 20, 25, 0.7)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(98, 0, 69, 0.3)',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(98, 0, 69, 0.2)',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                <Typography variant="h4" sx={{ color: 'white', fontWeight: 600, letterSpacing: 0.5 }}>
+                  Problem Library
+                  <Typography component="span" sx={{ ml: 2, color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem' }}>
+                    {problems.length} total
+                  </Typography>
                 </Typography>
-                <FormControl size="small" sx={{ minWidth: 120 }}>
-                  <InputLabel>Sort By</InputLabel>
+                <FormControl
+                  size="small"
+                  sx={{
+                    minWidth: 180,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      bgcolor: 'rgba(0, 0, 0, 0.3)'
+                    }
+                  }}
+                >
+                  <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>Sort By</InputLabel>
                   <Select
                     value={problemSortBy}
                     label="Sort By"
                     onChange={(e) => setProblemSortBy(e.target.value as 'asc' | 'desc')}
+                    sx={{
+                      color: 'white',
+                      '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(98, 0, 69, 0.5)' },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(98, 0, 69, 0.8)' },
+                      '.MuiSvgIcon-root': { color: 'white' }
+                    }}
                   >
                     <MenuItem value="asc">Difficulty: Low to High</MenuItem>
                     <MenuItem value="desc">Difficulty: High to Low</MenuItem>
@@ -249,40 +326,72 @@ export default function Dashboard() {
                 </FormControl>
               </Box>
 
-              <Box sx={{ maxHeight: '600px', overflowY: 'auto' }}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Box sx={{ maxHeight: '500px', overflowY: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: 2 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(98, 0, 69, 0.5)', borderRadius: 2, '&:hover': { background: 'rgba(98, 0, 69, 0.7)' } } }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
                   {sortedProblems.map((problem) => (
-                    <Card key={problem.id} variant="outlined">
-                      <CardContent>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="h6" component="div">
+                    <Card
+                      key={problem.id}
+                      elevation={0}
+                      sx={{
+                        background: 'linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(20, 0, 15, 0.6) 100%)',
+                        backdropFilter: 'blur(10px)',
+                        border: '1px solid rgba(98, 0, 69, 0.3)',
+                        borderRadius: 2,
+                        transition: 'all 0.3s ease',
+                        '&:hover': {
+                          borderColor: 'rgba(98, 0, 69, 0.6)',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 4px 20px rgba(98, 0, 69, 0.3)'
+                        }
+                      }}
+                    >
+                      <CardContent sx={{ pb: 1 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                          <Typography variant="h6" component="div" sx={{ color: 'white', fontWeight: 500 }}>
                             {problem.name}
                           </Typography>
                           <Chip
-                            label={`Difficulty: ${problem.difficulty}`}
-                            color={problem.difficulty <= 3 ? 'success' : problem.difficulty <= 7 ? 'warning' : 'error'}
+                            label={`Level ${problem.difficulty}`}
                             size="small"
+                            sx={{
+                              fontWeight: 600,
+                              bgcolor: 'rgba(98, 0, 69, 0.8)',
+                              color: 'white',
+                              border: '1px solid rgba(98, 0, 69, 1)'
+                            }}
                           />
                         </Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', lineHeight: 1.6 }}>
                           {problem.description}
                         </Typography>
                       </CardContent>
-                      <CardActions>
+                      <CardActions sx={{ px: 2, pb: 2 }}>
                         <Button
                           size="small"
                           variant="contained"
                           onClick={() => toggleProblemExpand(problem.id)}
+                          sx={{
+                            bgcolor: 'rgba(98, 0, 69, 0.8)',
+                            backdropFilter: 'blur(10px)',
+                            borderRadius: 1.5,
+                            px: 2.5,
+                            fontWeight: 500,
+                            textTransform: 'none',
+                            '&:hover': {
+                              bgcolor: 'rgba(98, 0, 69, 1)',
+                              transform: 'scale(1.05)'
+                            }
+                          }}
                         >
-                          {expandedProblem === problem.id ? 'Cancel' : 'Send'}
+                          {expandedProblem === problem.id ? 'Cancel' : 'Send to Candidate'}
                         </Button>
                       </CardActions>
                       <Collapse in={expandedProblem === problem.id} timeout="auto" unmountOnExit>
-                        <Box sx={{ p: 2, bgcolor: 'grey.50', borderTop: 1, borderColor: 'divider' }}>
-                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                        <Box sx={{ p: 3, bgcolor: 'rgba(0, 0, 0, 0.4)', borderTop: '1px solid rgba(98, 0, 69, 0.3)' }}>
+                          <Typography variant="body2" sx={{ mb: 2, fontWeight: 500, color: 'rgba(255, 255, 255, 0.9)' }}>
                             Enter candidate email:
                           </Typography>
-                          <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Box sx={{ display: 'flex', gap: 1.5 }}>
                             <TextField
                               size="small"
                               fullWidth
@@ -290,11 +399,32 @@ export default function Dashboard() {
                               placeholder="candidate@example.com"
                               value={problemEmail}
                               onChange={(e) => setProblemEmail(e.target.value)}
+                              sx={{
+                                '& .MuiInputBase-root': {
+                                  borderRadius: 1.5,
+                                  bgcolor: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                '& .MuiInputBase-input': { color: 'white' },
+                                '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(98, 0, 69, 0.4)' },
+                                '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(98, 0, 69, 0.6)' },
+                                '& .MuiInputBase-input::placeholder': { color: 'rgba(255, 255, 255, 0.3)', opacity: 1 }
+                              }}
                             />
                             <Button
                               size="small"
                               variant="contained"
                               onClick={() => handleSendProblem(problem.id)}
+                              sx={{
+                                bgcolor: 'rgba(98, 0, 69, 0.8)',
+                                borderRadius: 1.5,
+                                px: 3,
+                                fontWeight: 500,
+                                textTransform: 'none',
+                                '&:hover': {
+                                  bgcolor: 'rgba(98, 0, 69, 1)',
+                                  transform: 'scale(1.05)'
+                                }
+                              }}
                             >
                               Send
                             </Button>
@@ -310,50 +440,88 @@ export default function Dashboard() {
 
           {/* Assessment List Section */}
           <Box sx={{ flex: 1 }}>
-            <Paper sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h5" sx={{ mb: 2 }}>
-                Assessment List ({assessments.length})
+            <Paper
+              elevation={0}
+              sx={{
+                p: 4,
+                height: '100%',
+                background: 'rgba(20, 20, 25, 0.7)',
+                backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(98, 0, 69, 0.3)',
+                borderRadius: 3,
+                boxShadow: '0 8px 32px rgba(98, 0, 69, 0.2)',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <Typography variant="h4" sx={{ mb: 3, color: 'white', fontWeight: 600, letterSpacing: 0.5 }}>
+                Assessments
+                <Typography component="span" sx={{ ml: 2, color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.9rem' }}>
+                  {assessments.length} total
+                </Typography>
               </Typography>
 
-              <Box sx={{ display: 'flex', gap: 2, height: '100%' }}>
+              <Box sx={{ display: 'flex', gap: 3, height: '100%' }}>
                 {/* Completed Assessments */}
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6" sx={{ mb: 1 }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4caf50' }} />
                     Completed ({sortedAssessments.filter(a => a.completed).length})
                   </Typography>
-                  <TableContainer sx={{ maxHeight: '550px' }}>
+                  <TableContainer sx={{ maxHeight: '500px', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: 2 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(98, 0, 69, 0.5)', borderRadius: 2, '&:hover': { background: 'rgba(98, 0, 69, 0.7)' } } }}>
                     <Table stickyHeader size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>Applicant Email</TableCell>
-                          <TableCell>Score</TableCell>
-                          <TableCell>Actions</TableCell>
+                          <TableCell sx={{ bgcolor: 'rgba(0, 0, 0, 0.6)', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, borderBottom: '1px solid rgba(98, 0, 69, 0.3)' }}>Applicant Email</TableCell>
+                          <TableCell sx={{ bgcolor: 'rgba(0, 0, 0, 0.6)', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, borderBottom: '1px solid rgba(98, 0, 69, 0.3)' }}>Score</TableCell>
+                          <TableCell sx={{ bgcolor: 'rgba(0, 0, 0, 0.6)', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, borderBottom: '1px solid rgba(98, 0, 69, 0.3)' }}>Actions</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {sortedAssessments
                           .filter(assessment => assessment.completed)
                           .map((assessment) => (
-                            <TableRow key={assessment.id}>
-                              <TableCell>{assessment.applicant_email}</TableCell>
-                              <TableCell>
+                            <TableRow
+                              key={assessment.id}
+                              sx={{
+                                '&:hover': {
+                                  bgcolor: 'rgba(98, 0, 69, 0.1)'
+                                }
+                              }}
+                            >
+                              <TableCell sx={{ color: 'white', borderBottom: '1px solid rgba(98, 0, 69, 0.2)' }}>{assessment.applicant_email}</TableCell>
+                              <TableCell sx={{ borderBottom: '1px solid rgba(98, 0, 69, 0.2)' }}>
                                 {assessment.score !== undefined ? (
                                   <Chip
                                     label={assessment.score}
-                                    color={assessment.score >= 90 ? 'success' : assessment.score >= 70 ? 'warning' : 'error'}
                                     size="small"
+                                    sx={{
+                                      fontWeight: 600,
+                                      bgcolor: 'rgba(98, 0, 69, 0.8)',
+                                      color: 'white',
+                                      border: '1px solid rgba(98, 0, 69, 1)'
+                                    }}
                                   />
                                 ) : (
                                   'N/A'
                                 )}
                               </TableCell>
-                              <TableCell>
+                              <TableCell sx={{ borderBottom: '1px solid rgba(98, 0, 69, 0.2)' }}>
                                 <Button
-                                  variant="outlined"
+                                  variant="contained"
                                   size="small"
                                   onClick={() => navigate(`/admin/results/${assessment.id}`)}
+                                  sx={{
+                                    bgcolor: 'rgba(98, 0, 69, 0.8)',
+                                    borderRadius: 1.5,
+                                    textTransform: 'none',
+                                    fontWeight: 500,
+                                    '&:hover': {
+                                      bgcolor: 'rgba(98, 0, 69, 1)',
+                                      transform: 'scale(1.05)'
+                                    }
+                                  }}
                                 >
-                                  See Results
+                                  View Results
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -365,24 +533,32 @@ export default function Dashboard() {
 
                 {/* Incomplete Assessments */}
                 <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6" sx={{ mb: 1 }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: 'white', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Box component="span" sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#ff9800' }} />
                     Incomplete ({sortedAssessments.filter(a => !a.completed).length})
                   </Typography>
-                  <TableContainer sx={{ maxHeight: '550px' }}>
+                  <TableContainer sx={{ maxHeight: '500px', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: 2 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(98, 0, 69, 0.5)', borderRadius: 2, '&:hover': { background: 'rgba(98, 0, 69, 0.7)' } } }}>
                     <Table stickyHeader size="small">
                       <TableHead>
                         <TableRow>
-                          <TableCell>Applicant Email</TableCell>
-                          <TableCell>Expires At</TableCell>
+                          <TableCell sx={{ bgcolor: 'rgba(0, 0, 0, 0.6)', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, borderBottom: '1px solid rgba(98, 0, 69, 0.3)' }}>Applicant Email</TableCell>
+                          <TableCell sx={{ bgcolor: 'rgba(0, 0, 0, 0.6)', color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, borderBottom: '1px solid rgba(98, 0, 69, 0.3)' }}>Expires At</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {sortedAssessments
                           .filter(assessment => !assessment.completed)
                           .map((assessment) => (
-                            <TableRow key={assessment.id}>
-                              <TableCell>{assessment.applicant_email}</TableCell>
-                              <TableCell>
+                            <TableRow
+                              key={assessment.id}
+                              sx={{
+                                '&:hover': {
+                                  bgcolor: 'rgba(98, 0, 69, 0.1)'
+                                }
+                              }}
+                            >
+                              <TableCell sx={{ color: 'white', borderBottom: '1px solid rgba(98, 0, 69, 0.2)' }}>{assessment.applicant_email}</TableCell>
+                              <TableCell sx={{ color: 'rgba(255, 255, 255, 0.7)', borderBottom: '1px solid rgba(98, 0, 69, 0.2)' }}>
                                 {new Date(assessment.expires_at).toLocaleDateString()}
                               </TableCell>
                             </TableRow>
@@ -396,6 +572,7 @@ export default function Dashboard() {
           </Box>
         </Box>
       </Container>
-    </>
+      </Box>
+    </Box>
   );
 }
