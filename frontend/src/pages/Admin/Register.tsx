@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import {
-  Container,
-  Box,
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Paper,
-} from '@mui/material';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from '../../services/auth.service';
+import DarkVeil from '../../components/effects/DarkVeil';
+
+const fadeInStyle = `
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
 
 export default function Register() {
   const navigate = useNavigate();
@@ -46,85 +49,100 @@ export default function Register() {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <Paper elevation={3} sx={{ p: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
-            AI Interview OA
-          </Typography>
-          <Typography component="h2" variant="h5" align="center" gutterBottom>
-            Recruiter Registration
-          </Typography>
+    <>
+      <style>{fadeInStyle}</style>
+      <div className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden">
+        <div className="absolute inset-0 bg-black">
+          <DarkVeil
+            hueShift={1000}
+            speed={0.3}
+            warpAmount={0.2}
+          />
+        </div>
 
+        <Card className="w-full max-w-md shadow-2xl relative z-10 bg-[rgb(0_0_0_/_0.45)] backdrop-blur-sm" style={{animation: 'fadeIn 0.7s ease-in forwards', opacity: 0}}>
+        <CardHeader className="space-y-1 text-center">
+          <div className="flex justify-center mb-4">
+            <img
+              src="/SystemaLogo.png"
+              alt="SystemUOA Logo"
+              className="h-20 w-auto"
+            />
+          </div>
+          <CardTitle className="text-3xl font-bold tracking-tight text-white">
+            Systema
+          </CardTitle>
+          <CardDescription className="text-base text-white">
+            Recruiter Registration Portal
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
           {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
+            <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4">
               {error}
-            </Alert>
+            </div>
           )}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              name="confirmPassword"
-              label="Confirm Password"
-              type="password"
-              id="confirmPassword"
-              autoComplete="new-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-white">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="recruiter@company.com"
+                className="border-white text-white placeholder:text-gray-400"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoFocus
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-white">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                className="border-white text-white placeholder:text-gray-400"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                className="border-white text-white placeholder:text-gray-400"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+              />
+            </div>
+
             <Button
               type="submit"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              className="w-full text-white"
+              size="lg"
               disabled={loading}
             >
               {loading ? 'Creating account...' : 'Register'}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
-              <Link to="/login" style={{ textDecoration: 'none' }}>
-                <Typography variant="body2" color="primary">
-                  Already have an account? Sign in
-                </Typography>
-              </Link>
-            </Box>
-          </Box>
-        </Paper>
-      </Box>
-    </Container>
+          </form>
+
+          <div className="mt-6 text-center text-sm">
+            <span className="text-white">Already have an account? </span>
+            <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium">
+              Sign in
+            </Link>
+          </div>
+        </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }

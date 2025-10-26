@@ -4,9 +4,9 @@
   "description": "LLM grader for system design interviews",
   "main": "backend/gemini-grader.ts",
   "scripts": {
-    "dev": "next dev -p 5173",
+    "dev": "next dev -p 3000",
     "build": "next build",
-    "start": "next start -p 5173",
+    "start": "next start -p 3000",
     "test": "ts-node backend/gemini-grader.ts"
   },
   "dependencies": {

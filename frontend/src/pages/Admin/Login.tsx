@@ -7,6 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { authService } from '../../services/auth.service';
 import DarkVeil from '../../components/effects/DarkVeil';
 
+const fadeInStyle = `
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+`;
+
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -30,16 +37,18 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-white">
-      <div className="absolute inset-0">
-        <DarkVeil
-          hueShift={1000}
-          speed={0.3}
-          warpAmount={0.2}
-        />
-      </div>
-      
-      <Card className="w-full max-w-md shadow-2xl relative z-10 bg-[rgb(0_0_0_/_0.45)] backdrop-blur-sm">
+    <>
+      <style>{fadeInStyle}</style>
+      <div className="fixed inset-0 flex items-center justify-center p-4 overflow-hidden">
+        <div className="absolute inset-0 bg-black">
+          <DarkVeil
+            hueShift={1000}
+            speed={0.3}
+            warpAmount={0.2}
+          />
+        </div>
+
+        <Card className="w-full max-w-md shadow-2xl relative z-10 bg-[rgb(0_0_0_/_0.45)] backdrop-blur-sm" style={{animation: 'fadeIn 0.7s ease-in forwards', opacity: 0}}>
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
             <img
@@ -49,7 +58,7 @@ export default function Login() {
             />
           </div>
           <CardTitle className="text-3xl font-bold tracking-tight text-white">
-            SystemUOA
+            Systema
           </CardTitle>
           <CardDescription className="text-base text-white">
             Recruiter Login Portal
@@ -107,7 +116,8 @@ export default function Login() {
             </Link>
           </div>
         </CardContent>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 }
