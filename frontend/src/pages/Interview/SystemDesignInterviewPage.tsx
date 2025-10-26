@@ -18,6 +18,7 @@ const SystemDesignInterviewPage: React.FC = () => {
 
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [violations, setViolations] = useState<Array<{type: string, severity: string, timestamp: number}>>([]);
+  const [countdown, setCountdown] = useState<number | null>(3); // Start with 3
 
   // Format time as MM:SS
   const formatTime = (ms: number): string => {
@@ -146,6 +147,25 @@ const SystemDesignInterviewPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversation.status, interviewId]);
 
+  // Countdown timer on mount - auto start interview
+  useEffect(() => {
+    if (countdown === null || countdown < 1) return;
+
+    const countdownTimer = setTimeout(() => {
+      if (countdown === 1) {
+        // Countdown finished - start interview
+        setCountdown(null);
+        handleStartConversation();
+      } else {
+        // Continue countdown
+        setCountdown(countdown - 1);
+      }
+    }, 1000);
+
+    return () => clearTimeout(countdownTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [countdown]);
+
   // Cleanup timer on component unmount
   useEffect(() => {
     return () => {
@@ -156,19 +176,30 @@ const SystemDesignInterviewPage: React.FC = () => {
 
   return (
     <div className="relative h-screen">
-      {/* Proctoring Monitor - Top right with status indicator */}
-      {interviewId && (
-        <div className="fixed top-4 right-4 z-50">
+      {/* Countdown Overlay */}
+      {countdown !== null && (
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-white text-2xl mb-8 font-semibold">Interview Starting In</h2>
+            <div className="text-white text-9xl font-bold animate-pulse">
+              {countdown}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Top right controls stack */}
+      <div className="fixed top-4 right-4 z-40 flex flex-col gap-3 items-end">
+        {/* Proctoring Monitor */}
+        {interviewId && (
           <ProctoringMonitor
             sessionId={interviewId}
             onViolation={handleViolation}
             showPreview={false}
           />
-        </div>
-      )}
+        )}
 
-      {/* Timer - Bottom right corner, above interview controls */}
-      <div className="fixed bottom-40 right-8 z-40">
+        {/* Timer */}
         <div className="bg-black text-white shadow-md rounded-2xl px-4 py-3">
           <div className="flex items-center gap-3">
             {timeRemaining !== null && (
@@ -184,10 +215,8 @@ const SystemDesignInterviewPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Interview Control Buttons - Bottom right */}
-      <div className="fixed bottom-8 right-8 z-40 flex flex-col gap-3">
+        {/* Interview Control Buttons */}
         {conversation.status === 'disconnected' ? (
           <button
             onClick={handleStartConversation}
