@@ -185,14 +185,43 @@ export default function Dashboard() {
       return;
     }
 
+    // Find the problem details
+    const problem = problems.find(p => p.id === problemId);
+    if (!problem) {
+      alert('Problem not found');
+      return;
+    }
+
     try {
-      // TODO: Integrate with Supabase
-      alert(`Problem sent to ${problemEmail}`);
+      // Generate unique assessment ID
+      const assessmentId = `assessment-${Date.now()}`;
+
+      // Call backend API to send email
+      const response = await fetch('http://localhost:3000/api/send-interview-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          candidateEmail: problemEmail,
+          candidateName: problemEmail.split('@')[0], // Use email username as name
+          assessmentId: assessmentId,
+          company: 'Systema'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email');
+      }
+
+      alert(`✅ Assessment sent successfully to ${problemEmail}!\n\nAssessment ID: ${assessmentId}`);
       setExpandedProblem(null);
       setProblemEmail('');
-    } catch (error) {
-      alert('Failed to send problem');
-      console.error(error);
+    } catch (error: any) {
+      alert(`❌ Failed to send assessment: ${error.message}`);
+      console.error('Send email error:', error);
     }
   };
 
