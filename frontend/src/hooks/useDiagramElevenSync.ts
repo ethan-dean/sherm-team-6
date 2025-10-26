@@ -1,47 +1,102 @@
 // src/hooks/useDiagramElevenSync.ts
 import { useCallback, useEffect, useRef } from "react";
 import { useDiagramJSON } from "@/features/system-design";
-import { initElevenWS, sendContextUpdate } from "@/lib/eleven/wsClient";
 
 // Options:
-// - wsUrl: the live ElevenLabs conversation WebSocket URL for THIS call
-// - debounceMs: avoid spamming the socket on rapid edits
-export function useDiagramElevenSync(opts: { wsUrl: string; debounceMs?: number }) {
-  const { wsUrl, debounceMs = 800 } = opts;
+// - sendContextualUpdate: function from useConversation to send updates to the agent
+// - debounceMs: interval for checking changes (default 800ms)
+export function useDiagramElevenSync(opts: {
+  sendContextualUpdate?: (message: string) => void;
+  debounceMs?: number;
+}) {
+  const { sendContextualUpdate, debounceMs = 800 } = opts;
   const getDiagramJSON = useDiagramJSON();
-  const tRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastSentRef = useRef<string>("");
+  const tRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // init socket once for this component tree
-  useEffect(() => {
-    if (wsUrl) initElevenWS(wsUrl);
-  }, [wsUrl]);
+  // Track last three states: two states ago, one state ago, current
+  const twoStatesAgoRef = useRef<string>("");
+  const oneStateAgoRef = useRef<string>("");
+  const currentStateRef = useRef<string>("");
 
-  const flush = useCallback(() => {
+  const check = useCallback(() => {
     const diagram = getDiagramJSON();
-    const snapshot = JSON.stringify(diagram);
 
-    // Skip if identical to last sent
-    if (snapshot === lastSentRef.current) return;
-    lastSentRef.current = snapshot;
+    // Compare diagram without timestamp to detect actual changes
+    const { timestamp, ...diagramWithoutTimestamp } = diagram;
+    const snapshot = JSON.stringify(diagramWithoutTimestamp);
 
-    // Keep the text concise but clearly structured (as the docs show)
-    const text = [
-      "### Current diagram state (JSON)",
-      "Use this as the authoritative UI state for the ongoing system design.",
-      "",
-      snapshot,
-    ].join("\n");
+    // Shift states: two_ago <- one_ago <- current <- new
+    twoStatesAgoRef.current = oneStateAgoRef.current;
+    oneStateAgoRef.current = currentStateRef.current;
+    currentStateRef.current = snapshot;
 
-    sendContextUpdate(text);
-  }, [getDiagramJSON]);
+    // Calculate diffs
+    const diff1HasChange = twoStatesAgoRef.current !== oneStateAgoRef.current;
+    const diff2HasChange = oneStateAgoRef.current !== currentStateRef.current;
 
-  // Schedule a debounced push
-  const schedule = useCallback(() => {
-    if (tRef.current) clearTimeout(tRef.current);
-    tRef.current = setTimeout(flush, debounceMs);
-  }, [flush, debounceMs]);
+    // Send only when: there was a change (diff1) followed by stability (no diff2)
+    // This means user stopped making changes
+    if (diff1HasChange && !diff2HasChange && currentStateRef.current !== "" && sendContextualUpdate) {
+      console.log('[DiagramSync] Changes detected then stabilized - sending update');
 
-  // Expose both manual and debounced triggers
-  return { pushNow: flush, schedule };
+      // Send the full diagram with timestamp
+      const fullDiagram = getDiagramJSON();
+      const fullSnapshot = JSON.stringify(fullDiagram);
+      const text = [
+        "### Current diagram state (JSON)",
+        "Use this as the authoritative UI state for the ongoing system design.",
+        "",
+        fullSnapshot,
+      ].join("\n");
+
+      sendContextualUpdate(text);
+    }
+  }, [getDiagramJSON, sendContextualUpdate]);
+
+  // Start/stop the interval-based checking
+  const start = useCallback(() => {
+    if (tRef.current) return; // Already running
+    console.log('[DiagramSync] Starting change detection');
+
+    // Initialize with current state
+    const diagram = getDiagramJSON();
+    const { timestamp, ...diagramWithoutTimestamp } = diagram;
+    currentStateRef.current = JSON.stringify(diagramWithoutTimestamp);
+
+    tRef.current = setInterval(check, debounceMs);
+  }, [check, debounceMs, getDiagramJSON]);
+
+  const stop = useCallback(() => {
+    if (tRef.current) {
+      console.log('[DiagramSync] Stopping change detection');
+      clearInterval(tRef.current);
+      tRef.current = null;
+    }
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      stop();
+    };
+  }, [stop]);
+
+  // Expose start/stop controls and manual push
+  return {
+    start,
+    stop,
+    pushNow: () => {
+      if (!sendContextualUpdate) return;
+
+      const diagram = getDiagramJSON();
+      const fullSnapshot = JSON.stringify(diagram);
+      const text = [
+        "### Current diagram state (JSON)",
+        "Use this as the authoritative UI state for the ongoing system design.",
+        "",
+        fullSnapshot,
+      ].join("\n");
+      sendContextualUpdate(text);
+    }
+  };
 }
