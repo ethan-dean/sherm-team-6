@@ -360,7 +360,7 @@ export default function OAResults() {
                 <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 500 }}>
                   Performance Comparison
                 </Typography>
-                <ResponsiveContainer width="100%" height={400}>
+                <ResponsiveContainer width="100%" height={535}>
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="rgba(98, 0, 69, 0.2)" />
                     <XAxis dataKey="name" stroke="rgba(255, 255, 255, 0.7)" />
