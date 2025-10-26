@@ -609,7 +609,7 @@ export default function OAResults() {
                       max: 10,
                       metrics: [
                         'Reliability',
-                        'Scalability',
+                        'Scala-\nbility',
                         'Availability',
                         'Communication',
                         'Tradeoff\nAnalysis',
@@ -632,8 +632,8 @@ export default function OAResults() {
                       '& .MuiChartsLegend-root text': { fill: 'white !important' },
                       '& text': { fill: 'white !important' },
                       '& .MuiChartsAxis-label': { fill: 'white !important' },
-                      '& .MuiChartsAxis-line': { stroke: 'rgba(255, 255, 255, 0.5) !important' },
-                      '& .MuiChartsAxis-tick': { stroke: 'rgba(255, 255, 255, 0.5) !important' },
+                      '& .MuiChartsAxis-line': { stroke: 'rgba(0, 0, 0, 0.8) !important' },
+                      '& .MuiChartsAxis-tick': { stroke: 'rgba(0, 0, 0, 0.8) !important' },
                     }}
                   />
                 </Box>
