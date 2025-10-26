@@ -54,7 +54,7 @@ export async function fetchAssessments(): Promise<DesignAssessment[]> {
   const { data, error } = await supabase
     .from("design_assessments")
     .select("*")
-    .eq("sender_id", userId) // <-- filter by the current sender
+    .eq("sender_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
