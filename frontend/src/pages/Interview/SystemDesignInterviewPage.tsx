@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useConversation } from '@elevenlabs/react';
 import SystemDesignInterview from './SystemDesignInterview';
-import { interviewService } from '@/services/interview.service';
 import { ProctoringMonitor } from '../../../../components/ProctoringMonitor';
+import { orchestrateGrading } from '@/services/grading.service';
+import { supabase } from '@/lib/supabase';
 
 const INTERVIEW_DURATION_MS = 45 * 60 * 1000; // 45 minutes
 
@@ -19,6 +20,8 @@ const SystemDesignInterviewPage: React.FC = () => {
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [violations, setViolations] = useState<Array<{type: string, severity: string, timestamp: number}>>([]);
   const [countdown, setCountdown] = useState<number | null>(3); // Start with 3
+  const [conversationId, setConversationId] = useState<string | null>(null);
+  const [isGrading, setIsGrading] = useState(false);
 
   // Format time as MM:SS
   const formatTime = (ms: number): string => {
@@ -64,26 +67,57 @@ const SystemDesignInterviewPage: React.FC = () => {
     setViolations(prev => [...prev, { type, severity, timestamp: Date.now() }]);
   };
 
-  // Submit interview to backend
+  // Submit interview to backend and trigger grading
   const submitInterview = async () => {
     if (hasSubmittedRef.current || !interviewId) return;
     hasSubmittedRef.current = true;
 
-    try {
-      console.log('[Interview] Submitting:', interviewId);
-      const duration = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
+    console.log('[Interview] Submitting:', interviewId);
+    const duration = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
 
-      await interviewService.submitInterview(interviewId, {
-        status: 'completed',
-        endedAt: new Date().toISOString(),
-        duration,
+    // Update assessment status in Supabase
+    try {
+      const { error: updateError } = await supabase
+        .from('design_assessments')
+        .update({
+          ended_at: new Date().toISOString(),
+          started_at: startTimeRef.current ? new Date(startTimeRef.current).toISOString() : null,
+        })
+        .eq('id', interviewId);
+
+      if (updateError) {
+        console.error('[Interview] Failed to update assessment:', updateError);
+      } else {
+        console.log('[Interview] Assessment updated successfully');
+      }
+    } catch (error) {
+      console.error('[Interview] Update error:', error);
+    }
+
+    // Start grading process
+    setIsGrading(true);
+    console.log('[Interview] Starting grading process...');
+
+    try {
+      // Get diagram JSON from Canvas
+      const getDiagramJSON = (window as any).getDiagramJSON;
+      const diagramJson = getDiagramJSON ? getDiagramJSON() : { nodes: [], edges: [] };
+
+      console.log('[Interview] Diagram captured:', {
+        nodeCount: diagramJson.nodes?.length || 0,
+        edgeCount: diagramJson.edges?.length || 0
       });
 
-      console.log('[Interview] Submitted successfully');
-    } catch (error) {
-      console.error('[Interview] Submission error:', error);
-      // Continue to redirect even if submission fails
+      // Orchestrate grading (fetches problem, transcript, calls edge function, saves results)
+      await orchestrateGrading(interviewId, conversationId, diagramJson);
+
+      console.log('[Interview] Grading completed successfully');
+    } catch (gradingError) {
+      console.error('[Interview] Grading failed:', gradingError);
+      // Continue to redirect even if grading fails
+      // The user can still see partial results or retry later
     } finally {
+      setIsGrading(false);
       // Always redirect to finished page, regardless of success/failure
       console.log('[Interview] Redirecting to finished page');
       navigate('/interview/finished');
@@ -107,6 +141,10 @@ const SystemDesignInterviewPage: React.FC = () => {
         agentId: 'agent_5401k89w0ehgejy8z1bghfxrc5cm',
         connectionType: 'webrtc',
       });
+
+      // Capture conversation ID if available
+      // The conversation object should have the conversationId after starting
+      console.log('[Conversation] Started, conversation object:', conversation);
     } catch (error) {
       console.error('[Conversation] Failed to start session:', error);
     }
@@ -115,6 +153,17 @@ const SystemDesignInterviewPage: React.FC = () => {
   const handleStopConversation = async () => {
     await conversation.endSession();
   };
+
+  // Capture conversation ID when it becomes available
+  useEffect(() => {
+    // Use getId() method from ElevenLabs conversation hook
+    const convId = conversation.getId();
+    console.log('[Conversation] Checking for ID, found:', convId, 'current:', conversationId);
+    if (convId && convId !== conversationId) {
+      console.log('[Conversation] ✅ Captured conversation ID:', convId);
+      setConversationId(convId);
+    }
+  }, [conversation, conversationId]);
 
   // Monitor conversation status to control timer
   useEffect(() => {
@@ -184,6 +233,21 @@ const SystemDesignInterviewPage: React.FC = () => {
             <div className="text-white text-9xl font-bold animate-pulse">
               {countdown}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grading Overlay */}
+      {isGrading && (
+        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center">
+          <div className="text-center">
+            <div className="mb-6">
+              <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+            </div>
+            <h2 className="text-white text-2xl mb-4 font-semibold">Grading Your Interview</h2>
+            <p className="text-white/70 text-sm max-w-md">
+              Please wait while we analyze your system design and conversation...
+            </p>
           </div>
         </div>
       )}
