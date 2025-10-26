@@ -416,25 +416,54 @@ function ProblemCard({
             fullWidth
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={sending}
+            // 👇 keep the field enabled; just block edits while sending
+            inputProps={{ readOnly: sending }}
+            // Optional: show busy state for screen readers
+            slotProps={{ input: { "aria-busy": sending } as any }}
             sx={{
               mt: 1,
+              // Label colors
               "& .MuiInputLabel-root": {
-                color: "rgba(255,255,255,0.7)",
-                "&.Mui-focused": {
-                  color: "rgba(255,180,220,0.9)", // focused label color
-                },
+                color: "rgba(255,255,255,0.75)",
+                "&.Mui-focused": { color: "rgba(255,180,220,0.95)" },
+                "&.Mui-error": { color: "#ff7373" },
               },
+
+              // Outlined root
               "& .MuiOutlinedInput-root": {
                 color: "white",
-                "& fieldset": { borderColor: "rgba(98,0,69,0.5)" },
-                "&:hover fieldset": { borderColor: "rgba(98,0,69,0.8)" },
-                "&.Mui-focused fieldset": {
-                  borderColor: "rgba(255,180,220,0.9)", // focused border color
-                  boxShadow: "0 0 4px rgba(255,180,220,0.5)", // subtle glow
-                },
-                backgroundColor: "rgba(255,255,255,0.05)",
+                backgroundColor: "rgba(255,255,255,0.06)",
                 borderRadius: 1.5,
+                transition: "border-color .2s, box-shadow .2s, background-color .2s",
+
+                // Border / outline
+                "& fieldset": { borderColor: "rgba(255,255,255,0.18)" },
+                "&:hover fieldset": { borderColor: "rgba(255,255,255,0.3)" },
+                "&.Mui-focused fieldset": {
+                  borderColor: "rgba(255,180,220,0.95)",
+                  boxShadow: "0 0 0 3px rgba(255,180,220,0.25)",
+                },
+
+                // Input text + placeholder
+                "& input": {
+                  fontWeight: 600,
+                  "::placeholder": { color: "rgba(255,255,255,0.55)", opacity: 1 },
+                },
+
+                // Readonly (when sending)
+                "&.MuiInputBase-readOnly": {
+                  backgroundColor: "rgba(255,255,255,0.05)",
+                  "& fieldset": { borderColor: "rgba(255,255,255,0.18)" },
+                  cursor: "default",
+                },
+              },
+
+              // Kill Chrome autofill yellow on dark background
+              "& input:-webkit-autofill": {
+                WebkitTextFillColor: "#fff",
+                transition: "background-color 9999s ease-out",
+                WebkitBoxShadow: "0 0 0px 1000px rgba(255,255,255,0.06) inset",
+                boxShadow: "0 0 0px 1000px rgba(255,255,255,0.06) inset",
               },
             }}
           />
@@ -463,22 +492,27 @@ function ProblemCard({
             disabled={sending}
             startIcon={!sending ? <ArrowForwardIcon /> : undefined}
             endIcon={
-              sending ? (
-                <CircularProgress size={16} sx={{ color: "white" }} />
-              ) : undefined
+              sending ? <CircularProgress size={16} sx={{ color: "white" }} /> : undefined
             }
             sx={{
-              bgcolor: "rgba(98,0,69,0.95)",
+              bgcolor: sending ? "rgba(98,0,69,0.65)" : "rgba(98,0,69,0.95)",
               textTransform: "none",
               borderRadius: 1.5,
               fontWeight: 700,
               px: 2.5,
-              minWidth: 180, // prevents width jump between states
+              minWidth: 180,
+              color: "white",
+              "&.Mui-disabled": {
+                color: "white",
+                opacity: 1, // prevent dark fade
+                bgcolor: "rgba(98,0,69,0.4)", // subtle contrast instead of blackout
+              },
               "&:hover": { bgcolor: "rgba(98,0,69,1)" },
             }}
           >
             {sending ? "Sending" : "Send assessment"}
           </Button>
+
         </DialogActions>
       </Dialog>
     </Card>
