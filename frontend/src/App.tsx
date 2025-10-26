@@ -1,6 +1,7 @@
 // src/App.tsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { Toaster } from 'sonner';
 import Login from './pages/admin/Login';
 import Register from './pages/admin/Register';
 import Dashboard from './pages/admin/Dashboard';
@@ -34,6 +35,20 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <Toaster
+        theme="dark"
+        position="top-right"
+        richColors
+        closeButton
+        toastOptions={{
+          style: {
+            background: 'rgba(20, 21, 23, 0.95)',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            color: '#ffffff',
+            backdropFilter: 'blur(12px)',
+          },
+        }}
+      />
       <Router>
         <Routes>
           {/* Public Routes */}

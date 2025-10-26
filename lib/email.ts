@@ -12,8 +12,8 @@ if (!RESEND_API_KEY) {
 const resend = new Resend(RESEND_API_KEY)
 
 const EMAIL_CONFIG = {
-  from: 'Your Company <onboarding@resend.dev>',
-  companyName: 'Your Company',
+  from: 'Systema <noreply@systemoa.xyz>',
+  companyName: 'Systema',
   baseUrl: 'http://localhost:5173',
 }
 

@@ -7,6 +7,7 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
+import { toast } from "sonner";
 import { authService } from "../../services/auth.service";
 import Problems from "../../components/admin/Problems";
 import Assessments from "../../components/admin/Assessments";
@@ -122,10 +123,14 @@ export default function Dashboard() {
       // Reload assessments table
       await reloadAssessments();
 
-      alert(`Assessment sent successfully to ${email}!\n\nAssessment ID: ${assessmentId}`);
+      toast.success(`Assessment sent successfully to ${email}`, {
+        description: `Assessment ID: ${assessmentId}`,
+      });
     } catch (e: any) {
       console.error(e);
-      alert(`Failed to send assessment: ${e.message || e}`);
+      toast.error('Failed to send assessment', {
+        description: e.message || String(e),
+      });
     } finally {
       setSendingId(null); // reset loading state
     }

@@ -25,6 +25,7 @@ import {
 import CircularProgress from "@mui/material/CircularProgress";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { toast } from "sonner";
 import type { DesignProblem } from "../../services/design.service";
 
 interface Props {
@@ -212,7 +213,7 @@ function ProblemCard({
 
   const handleSend = async () => {
     if (!email.trim()) {
-      alert("Please enter an applicant email");
+      toast.error("Please enter an applicant email");
       return;
     }
     await onSend(email.trim());

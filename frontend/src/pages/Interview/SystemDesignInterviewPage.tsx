@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useConversation } from '@elevenlabs/react';
+import { toast } from 'sonner';
 import SystemDesignInterview from './SystemDesignInterview';
 import { ProctoringMonitor } from '../../../../components/ProctoringMonitor';
 import { orchestrateGrading } from '@/services/grading.service';
@@ -131,7 +132,7 @@ const SystemDesignInterviewPage: React.FC = () => {
       await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (error) {
       console.error('[Microphone] Access denied:', error);
-      alert('Please enable microphone access to start the interview.');
+      toast.error('Please enable microphone access to start the interview.');
       return;
     }
 

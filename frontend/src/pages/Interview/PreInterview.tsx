@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import DarkVeil from '../../components/effects/DarkVeil';
@@ -31,7 +32,9 @@ export default function PreInterview() {
       stream.getTracks().forEach(track => track.stop());
     } catch (err) {
       console.error('Permission denied:', err);
-      alert('Camera and microphone access are required for this interview. Please allow permissions and try again.');
+      toast.error('Permissions Required', {
+        description: 'Camera and microphone access are required for this interview. Please allow permissions and try again.',
+      });
     } finally {
       setIsCheckingPermissions(false);
     }

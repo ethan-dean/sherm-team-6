@@ -97,95 +97,101 @@ import {
   }
   
   // ============================================
-  // STYLES
+  // STYLES - Matching Login & Card Components
   // ============================================
-  
+
   const main = {
-    backgroundColor: '#f6f9fc',
+    backgroundColor: '#0a0a0a',
     fontFamily: '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,sans-serif',
+    padding: '40px 0',
   }
-  
+
   const container = {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(20, 21, 23, 0.9)',
+    backdropFilter: 'blur(12px)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
     margin: '0 auto',
-    padding: '20px 0 48px',
-    marginBottom: '64px',
-    maxWidth: '580px',
+    padding: '48px 40px',
+    borderRadius: '16px',
+    maxWidth: '600px',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
   }
-  
+
   const h1 = {
-    color: '#1f2937',
-    fontSize: '28px',
+    color: '#ffffff',
+    fontSize: '32px',
     fontWeight: 'bold',
-    margin: '40px 0 30px',
+    margin: '0 0 32px',
     padding: '0',
     textAlign: 'center' as const,
+    letterSpacing: '-0.02em',
   }
-  
+
   const text = {
-    color: '#374151',
+    color: '#e5e7eb',
     fontSize: '16px',
     lineHeight: '26px',
     margin: '16px 0',
-    padding: '0 40px',
   }
-  
+
   const box = {
-    backgroundColor: '#f9fafb',
-    border: '1px solid #e5e7eb',
-    borderRadius: '8px',
-    margin: '20px 40px',
-    padding: '20px',
+    backgroundColor: 'rgba(30, 32, 35, 0.6)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '12px',
+    margin: '24px 0',
+    padding: '24px',
   }
-  
+
   const boxTitle = {
-    color: '#1f2937',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    margin: '0 0 12px',
+    color: '#ffffff',
+    fontSize: '17px',
+    fontWeight: '600',
+    margin: '0 0 16px',
   }
-  
+
   const list = {
-    color: '#374151',
+    color: '#d1d5db',
     fontSize: '15px',
-    lineHeight: '24px',
+    lineHeight: '28px',
     margin: '0',
     paddingLeft: '20px',
   }
-  
+
   const buttonContainer = {
-    margin: '32px 0',
+    margin: '40px 0',
     textAlign: 'center' as const,
   }
-  
+
   const button = {
-    backgroundColor: '#2563eb',
-    borderRadius: '8px',
-    color: '#fff',
+    backgroundColor: '#3b82f6',
+    borderRadius: '12px',
+    color: '#ffffff',
     fontSize: '16px',
-    fontWeight: 'bold',
+    fontWeight: '600',
     textDecoration: 'none',
     textAlign: 'center' as const,
     display: 'inline-block',
-    padding: '14px 40px',
+    padding: '16px 48px',
+    boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4)',
   }
-  
+
   const hr = {
-    borderColor: '#e5e7eb',
-    margin: '32px 40px',
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    margin: '40px 0',
   }
-  
+
   const footer = {
-    color: '#6b7280',
+    color: '#9ca3af',
     fontSize: '14px',
     lineHeight: '24px',
-    margin: '8px 40px',
+    margin: '12px 0',
   }
-  
+
   const code = {
-    backgroundColor: '#f3f4f6',
-    padding: '4px 8px',
-    borderRadius: '4px',
+    backgroundColor: 'rgba(30, 32, 35, 0.8)',
+    color: '#93c5fd',
+    padding: '6px 10px',
+    borderRadius: '6px',
     fontSize: '13px',
     fontFamily: 'monospace',
     wordBreak: 'break-all' as const,
