@@ -1,13 +1,15 @@
 // src/hooks/useDiagramElevenSync.ts
 import { useCallback, useEffect, useRef } from "react";
 import { useDiagramJSON } from "@/features/system-design";
-import { initElevenWS, sendContextUpdate } from "@/lib/eleven/wsClient";
 
 // Options:
-// - wsUrl: the live ElevenLabs conversation WebSocket URL for THIS call
+// - sendContextualUpdate: function from useConversation to send updates to the agent
 // - debounceMs: interval for checking changes (default 800ms)
-export function useDiagramElevenSync(opts: { wsUrl: string; debounceMs?: number }) {
-  const { wsUrl, debounceMs = 800 } = opts;
+export function useDiagramElevenSync(opts: {
+  sendContextualUpdate?: (message: string) => void;
+  debounceMs?: number;
+}) {
+  const { sendContextualUpdate, debounceMs = 800 } = opts;
   const getDiagramJSON = useDiagramJSON();
   const tRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -15,11 +17,6 @@ export function useDiagramElevenSync(opts: { wsUrl: string; debounceMs?: number 
   const twoStatesAgoRef = useRef<string>("");
   const oneStateAgoRef = useRef<string>("");
   const currentStateRef = useRef<string>("");
-
-  // init socket once for this component tree
-  useEffect(() => {
-    if (wsUrl) initElevenWS(wsUrl);
-  }, [wsUrl]);
 
   const check = useCallback(() => {
     const diagram = getDiagramJSON();
@@ -39,7 +36,7 @@ export function useDiagramElevenSync(opts: { wsUrl: string; debounceMs?: number 
 
     // Send only when: there was a change (diff1) followed by stability (no diff2)
     // This means user stopped making changes
-    if (diff1HasChange && !diff2HasChange && currentStateRef.current !== "") {
+    if (diff1HasChange && !diff2HasChange && currentStateRef.current !== "" && sendContextualUpdate) {
       console.log('[DiagramSync] Changes detected then stabilized - sending update');
 
       // Send the full diagram with timestamp
@@ -52,9 +49,9 @@ export function useDiagramElevenSync(opts: { wsUrl: string; debounceMs?: number 
         fullSnapshot,
       ].join("\n");
 
-      sendContextUpdate(text);
+      sendContextualUpdate(text);
     }
-  }, [getDiagramJSON]);
+  }, [getDiagramJSON, sendContextualUpdate]);
 
   // Start/stop the interval-based checking
   const start = useCallback(() => {
@@ -89,6 +86,8 @@ export function useDiagramElevenSync(opts: { wsUrl: string; debounceMs?: number 
     start,
     stop,
     pushNow: () => {
+      if (!sendContextualUpdate) return;
+
       const diagram = getDiagramJSON();
       const fullSnapshot = JSON.stringify(diagram);
       const text = [
@@ -97,7 +96,7 @@ export function useDiagramElevenSync(opts: { wsUrl: string; debounceMs?: number 
         "",
         fullSnapshot,
       ].join("\n");
-      sendContextUpdate(text);
+      sendContextualUpdate(text);
     }
   };
 }

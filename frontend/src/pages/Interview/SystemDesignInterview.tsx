@@ -2,10 +2,14 @@ import React from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { Canvas } from "@/features/system-design/components/Canvas";
 
-const SystemDesignInterview: React.FC = () => {
+interface SystemDesignInterviewProps {
+  sendContextualUpdate?: (message: string) => void;
+}
+
+const SystemDesignInterview: React.FC<SystemDesignInterviewProps> = ({ sendContextualUpdate }) => {
   return (
     <ReactFlowProvider>
-      <Canvas />
+      <Canvas sendContextualUpdate={sendContextualUpdate} />
     </ReactFlowProvider>
   );
 };

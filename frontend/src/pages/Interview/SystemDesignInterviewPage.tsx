@@ -202,7 +202,7 @@ const SystemDesignInterviewPage: React.FC = () => {
 
       {/* Main Content */}
       <div>
-        <SystemDesignInterview />
+        <SystemDesignInterview sendContextualUpdate={conversation.sendContextualUpdate} />
       </div>
     </div>
   );

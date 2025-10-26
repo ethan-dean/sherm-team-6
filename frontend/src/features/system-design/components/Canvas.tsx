@@ -26,7 +26,11 @@ import type { ComponentKind, EdgeKind } from "../types";
 // 🔌 ElevenLabs live sync (contextual_update)
 import { useDiagramElevenSync } from "@/hooks/useDiagramElevenSync";
 
-export const Canvas: React.FC = () => {
+interface CanvasProps {
+  sendContextualUpdate?: (message: string) => void;
+}
+
+export const Canvas: React.FC<CanvasProps> = ({ sendContextualUpdate }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<MyNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<MyEdge>([]);
   const [edgeKind, setEdgeKind] = useState<EdgeKind>("arrow");
@@ -35,14 +39,11 @@ export const Canvas: React.FC = () => {
   const getDiagramJSON = useDiagramJSON();
   (window as any).getDiagramJSON = getDiagramJSON;
 
-  // Provide your active ElevenLabs conversation WebSocket URL here.
-  // You can inject it via env var (Next.js inlines this at build) or set window.__ELEVEN_WS_URL at runtime.
-  const elevenWsUrl =
-    (typeof window !== "undefined" && (window as any).__ELEVEN_WS_URL) ||
-    (import.meta.env.VITE_ELEVEN_WS_URL as string) || "";
-
-  // Initializes WS and monitors for diagram changes with two-state diff detection
-  const { start, stop, pushNow } = useDiagramElevenSync({ wsUrl: elevenWsUrl, debounceMs: 800 });
+  // Use the conversation's sendContextualUpdate if available
+  const { start, stop, pushNow } = useDiagramElevenSync({
+    sendContextualUpdate,
+    debounceMs: 800
+  });
 
   const withEditFns = useCallback(
     (node: MyNode): MyNode => {
@@ -147,11 +148,11 @@ export const Canvas: React.FC = () => {
 
   // 🔁 Start monitoring diagram changes when component mounts
   useEffect(() => {
-    if (!elevenWsUrl) return; // no-op if WS URL not provided
+    if (!sendContextualUpdate) return; // no-op if not in an active conversation
     start();
     return () => stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [elevenWsUrl]);
+  }, []);
 
   const nodeTypes = { system: SystemNode } satisfies NodeTypes;
 
