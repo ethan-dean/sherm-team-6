@@ -64,7 +64,7 @@ export function ProctoringMonitor({
     useEffect(() => {
         function handleVisibilityChange() {
             if ( document.hidden){
-                fetch('/api/proctoring/violation', {
+                fetch('http://localhost:3000/api/proctoring/violation', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -101,7 +101,7 @@ export function ProctoringMonitor({
         const frameBase64 = canvas.toDataURL('image/jpeg', 0.6)
 
         try {
-            const response = await fetch('/api/proctoring/analyze', {
+            const response = await fetch('http://localhost:3000/api/proctoring/analyze', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
@@ -123,17 +123,24 @@ export function ProctoringMonitor({
 
     return (
         <div className="proctoring-monitor">
-          {/* Video element */}
+          {/* Video element - rendered but invisible to user */}
           <video
             ref={videoRef}
             autoPlay
             muted
             playsInline
-            className={showPreview ? 'w-48 h-36 rounded-lg border-2 border-gray-300 object-cover' : 'hidden'}
+            style={{
+              position: 'absolute',
+              width: '1px',
+              height: '1px',
+              opacity: 0,
+              pointerEvents: 'none',
+              zIndex: -1
+            }}
           />
-    
+
           {/* Canvas (always hidden) */}
-          <canvas ref={canvasRef} className="hidden" />
+          <canvas ref={canvasRef} className="hidden" style={{ display: 'none' }} />
     
           {/* Status indicator */}
           {!showPreview && (

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import SystemDesignInterview from './SystemDesignInterview';
 import { interviewService } from '@/services/interview.service';
+import { ProctoringMonitor } from '../../../../components/ProctoringMonitor';
 
 // Extend HTMLElement to include ElevenLabs widget properties
 declare global {
@@ -25,6 +26,7 @@ const SystemDesignInterviewPage: React.FC = () => {
   const hasSubmittedRef = useRef(false); // Prevent duplicate submissions
 
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+  const [violations, setViolations] = useState<Array<{type: string, severity: string, timestamp: number}>>([]);
 
   // Format time as MM:SS
   const formatTime = (ms: number): string => {
@@ -62,6 +64,12 @@ const SystemDesignInterviewPage: React.FC = () => {
       timerIntervalRef.current = null;
     }
     setTimeRemaining(null);
+  };
+
+  // Handle proctoring violations
+  const handleViolation = (type: string, severity: string) => {
+    console.log(`[Proctoring] Violation detected: ${type} (${severity})`);
+    setViolations(prev => [...prev, { type, severity, timestamp: Date.now() }]);
   };
 
   // Submit interview to backend
@@ -139,6 +147,17 @@ const SystemDesignInterviewPage: React.FC = () => {
 
   return (
     <div className="relative h-screen">
+      {/* Proctoring Monitor - Top right with status indicator */}
+      {interviewId && (
+        <div className="fixed top-4 right-4 z-50">
+          <ProctoringMonitor
+            sessionId={interviewId}
+            onViolation={handleViolation}
+            showPreview={false}
+          />
+        </div>
+      )}
+
       {/* Timer - Floating above AI widget in bottom right */}
       <div className="fixed bottom-40 right-8 z-40">
         <div className="bg-black text-white shadow-md rounded-2xl px-4 py-3">

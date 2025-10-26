@@ -13,6 +13,7 @@
     "@google/generative-ai": "^0.21.0",
     "@react-email/components": "^0.5.7",
     "@react-email/render": "^1.4.0",
+    "@supabase/supabase-js": "^2.76.1",
     "@tailwindcss/postcss": "^4.1.16",
     "dotenv": "^17.2.3",
     "next": "^16.0.0",
