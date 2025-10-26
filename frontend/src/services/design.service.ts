@@ -21,6 +21,8 @@ export interface DesignAssessmentDB {
   applicant_email: string;
   expires_at: string;
   sender_id: string;
+  status: 'incomplete' | 'complete';
+  duration_ms: number | null;
 }
 
 export interface DesignAssessment extends DesignAssessmentDB {
@@ -53,17 +55,46 @@ export async function fetchAssessments(): Promise<DesignAssessment[]> {
 
   const { data, error } = await supabase
     .from("design_assessments")
-    .select("*")
+    .select(`
+      *,
+      design_assessment_results (
+        reliability,
+        scalability,
+        availability,
+        communication,
+        trade_off_analysis
+      )
+    `)
     .eq("sender_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) throw error;
 
-  return (data ?? []).map((a: DesignAssessmentDB) => ({
-    ...a,
-    completed: !!a.ended_at,
-    score: undefined,
-  }));
+  return (data ?? []).map((a: any) => {
+    const results = a.design_assessment_results?.[0];
+    let overallScore: number | undefined = undefined;
+
+    // Calculate average score from all metrics if results exist
+    if (results) {
+      const scores = [
+        results.reliability,
+        results.scalability,
+        results.availability,
+        results.communication,
+        results.trade_off_analysis
+      ].filter(s => s != null);
+
+      if (scores.length > 0) {
+        overallScore = Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length);
+      }
+    }
+
+    return {
+      ...a,
+      completed: !!a.ended_at,
+      score: overallScore,
+    };
+  });
 }
 
 export async function createAssessment(params: {
@@ -71,11 +102,11 @@ export async function createAssessment(params: {
   applicant_email: string;
   sender_id: string;
   expiresInDays?: number;
-}) {
+}): Promise<string> {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + (params.expiresInDays ?? 7));
 
-  const { error } = await supabase.from("design_assessments").insert([
+  const { data, error } = await supabase.from("design_assessments").insert([
     {
       problem_id: params.problem_id,
       applicant_email: params.applicant_email,
@@ -83,8 +114,11 @@ export async function createAssessment(params: {
       started_at: null,
       ended_at: null,
       expires_at: expiresAt.toISOString(),
+      status: 'incomplete',
+      duration_ms: null,
     },
-  ]);
+  ]).select('id').single();
 
   if (error) throw error;
+  return data.id;
 }
