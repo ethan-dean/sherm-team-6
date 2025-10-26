@@ -49,12 +49,35 @@ export default function Dashboard() {
   const sendAssessment = async (problemId: string, email: string) => {
     setSendingId(problemId);
     try {
+      // Create the assessment as before
       await createAssessment({ problem_id: problemId, applicant_email: email });
       await reloadAssessments();
-      alert('OA created successfully.');
-    } catch (e) {
+  
+      // Generate a unique assessment ID (for tracking in the email)
+      const assessmentId = `assessment-${Date.now()}`;
+  
+      // Send the email via your backend Resend route
+      const response = await fetch('http://localhost:3000/api/send-interview-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          candidateEmail: email,
+          candidateName: email.split('@')[0],
+          assessmentId,
+          company: 'Systema',
+        }),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email');
+      }
+  
+      // Alert the user on success
+      alert(`OA created and email sent successfully to ${email}!\n\nAssessment ID: ${assessmentId}`);
+    } catch (e: any) {
       console.error(e);
-      alert('Failed to create OA');
+      alert(`Failed to create OA or send email: ${e.message}`);
     } finally {
       setSendingId(null);
     }
