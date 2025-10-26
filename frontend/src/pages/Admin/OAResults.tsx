@@ -156,55 +156,119 @@ export default function OAResults() {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Button variant="outlined" onClick={() => navigate('/admin/dashboard')} sx={{ mb: 3 }}>
-        ← Back to Dashboard
-      </Button>
+    <Box sx={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #1a0b14 0%, #0a0a0a 50%, #120520 100%)',
+      position: 'relative',
+      overflow: 'auto'
+    }}>
+      {/* Subtle background pattern */}
+      <Box sx={{
+        position: 'fixed',
+        inset: 0,
+        backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(98, 0, 69, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(98, 0, 69, 0.15) 0%, transparent 50%)',
+        zIndex: 0,
+        pointerEvents: 'none'
+      }} />
 
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Assessment Results
-        </Typography>
+      <Box sx={{ position: 'relative', zIndex: 10 }}>
+        <Container maxWidth="lg" sx={{ pt: 4, pb: 6 }}>
+          <Button
+            variant="contained"
+            onClick={() => navigate('/admin/dashboard')}
+            sx={{
+              mb: 3,
+              bgcolor: 'rgba(98, 0, 69, 0.8)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 1.5,
+              px: 3,
+              fontWeight: 500,
+              textTransform: 'none',
+              '&:hover': {
+                bgcolor: 'rgba(98, 0, 69, 1)',
+                transform: 'scale(1.05)'
+              }
+            }}
+          >
+            ← Back to Dashboard
+          </Button>
 
-        <Divider sx={{ my: 3 }} />
+          <Paper
+            elevation={0}
+            sx={{
+              p: 4,
+              background: 'rgba(20, 20, 25, 0.7)',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(98, 0, 69, 0.3)',
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(98, 0, 69, 0.2)',
+            }}
+          >
+            <Typography variant="h4" gutterBottom sx={{ color: 'white', fontWeight: 600, letterSpacing: 0.5 }}>
+              Assessment Results
+            </Typography>
+
+            <Divider sx={{ my: 3, borderColor: 'rgba(98, 0, 69, 0.3)' }} />
 
         {/* Main Content: Two Columns */}
         <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', md: 'row' }, mb: 3 }}>
           {/* Left Column: Candidate Info + Overall Score and Radar Chart */}
           <Box sx={{ flex: '0 0 42%', display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* Candidate Info and Overall Score */}
-            <Card>
+            <Card
+              elevation={0}
+              sx={{
+                background: 'linear-gradient(135deg, rgba(98, 0, 69, 0.4) 0%, rgba(50, 20, 40, 0.5) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(98, 0, 69, 0.3)',
+                borderRadius: 2,
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 500 }}>
                   Candidate Information
                 </Typography>
-                <Typography variant="body1">
+                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
                   <strong>Email:</strong> {results.applicant_email}
                 </Typography>
-                <Typography variant="body1">
+                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
                   <strong>Assessment Type:</strong> System Design
                 </Typography>
-                <Typography variant="body1">
+                <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)' }}>
                   <strong>Completed:</strong>{' '}
                   {new Date(results.completed_at).toLocaleString()}
                 </Typography>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" gutterBottom>
+                <Divider sx={{ my: 2, borderColor: 'rgba(98, 0, 69, 0.3)' }} />
+                <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 500 }}>
                   Overall Score
                 </Typography>
-                <Typography variant="h2" color="primary">
+                <Typography variant="h2" sx={{ color: 'rgba(98, 0, 69, 1)', fontWeight: 600 }}>
                   {overallScore}/100
                 </Typography>
               </CardContent>
             </Card>
 
             {/* Performance Breakdown */}
-            <Card>
+            <Card
+              elevation={0}
+              sx={{
+                background: 'linear-gradient(135deg, rgba(98, 0, 69, 0.4) 0%, rgba(50, 20, 40, 0.5) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(98, 0, 69, 0.3)',
+                borderRadius: 2,
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom sx={{ mb: 3, color: 'white', fontWeight: 500 }}>
                   Performance Breakdown
                 </Typography>
-                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                <Box sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  '& .MuiChartsLegend-series text': { fill: 'white !important' },
+                  '& .MuiChartsLegend-label': { fill: 'white !important' },
+                  '& .MuiChartsLegend-root': { '& text': { fill: 'white !important' } },
+                }}>
                   <RadarChart
                     height={350}
                     series={[
@@ -217,6 +281,7 @@ export default function OAResults() {
                           results.communication,
                           results.tradeoff_analysis,
                         ],
+                        color: 'rgba(98, 0, 69, 0.8)',
                       },
                     ]}
                     radar={{
@@ -229,6 +294,16 @@ export default function OAResults() {
                         'Tradeoff\nAnalysis',
                       ],
                     }}
+                    sx={{
+                      '& .MuiChartsAxis-tickLabel': { fill: 'white !important' },
+                      '& .MuiChartsLegend-series text': { fill: 'white !important' },
+                      '& .MuiChartsLegend-label': { fill: 'white !important' },
+                      '& .MuiChartsLegend-root text': { fill: 'white !important' },
+                      '& text': { fill: 'white !important' },
+                      '& .MuiChartsAxis-label': { fill: 'white !important' },
+                      '& .MuiChartsAxis-line': { stroke: 'rgba(255, 255, 255, 0.5) !important' },
+                      '& .MuiChartsAxis-tick': { stroke: 'rgba(255, 255, 255, 0.5) !important' },
+                    }}
                   />
                 </Box>
               </CardContent>
@@ -238,22 +313,31 @@ export default function OAResults() {
           {/* Right Column: AI Summary and Bar Chart */}
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
             {/* AI Summary */}
-            <Card sx={{ maxHeight: '400px' }}>
+            <Card
+              elevation={0}
+              sx={{
+                maxHeight: '1000px',
+                background: 'linear-gradient(135deg, rgba(98, 0, 69, 0.4) 0%, rgba(50, 20, 40, 0.5) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(98, 0, 69, 0.3)',
+                borderRadius: 2,
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 500 }}>
                   AI Summary
                 </Typography>
-                <Box sx={{ maxHeight: '320px', overflow: 'auto', pr: 1 }}>
-                  <Typography variant="body1">
+                <Box sx={{ maxHeight: '920px', overflow: 'auto', pr: 1, '&::-webkit-scrollbar': { width: '8px' }, '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: 2 }, '&::-webkit-scrollbar-thumb': { background: 'rgba(98, 0, 69, 0.5)', borderRadius: 2, '&:hover': { background: 'rgba(98, 0, 69, 0.7)' } } }}>
+                  <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.9)', lineHeight: 1.6 }}>
                     {results.summary}
                   </Typography>
 
                   {results.suspicion > 50 && (
-                    <Box sx={{ mt: 3, p: 2, bgcolor: 'warning.light', borderRadius: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                    <Box sx={{ mt: 3, p: 2, bgcolor: 'rgba(255, 152, 0, 0.2)', border: '1px solid rgba(255, 152, 0, 0.4)', borderRadius: 1 }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#ff9800' }}>
                         ⚠️ Suspicion Alert
                       </Typography>
-                      <Typography variant="body2">
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
                         Suspicion level: {results.suspicion}% - This assessment may require manual review.
                       </Typography>
                     </Box>
@@ -263,41 +347,29 @@ export default function OAResults() {
             </Card>
 
             {/* Performance Scores Bar Chart */}
-            <Card>
+            <Card
+              elevation={0}
+              sx={{
+                background: 'linear-gradient(135deg, rgba(98, 0, 69, 0.4) 0%, rgba(50, 20, 40, 0.5) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(98, 0, 69, 0.3)',
+                borderRadius: 2,
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 500 }}>
                   Performance Comparison
                 </Typography>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="current" fill="#1976d2" name="Current Score" />
-                    <Bar dataKey="average" fill="#82ca9d" name="Problem Average" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(98, 0, 69, 0.2)" />
+                    <XAxis dataKey="name" stroke="rgba(255, 255, 255, 0.7)" />
+                    <YAxis domain={[0, 100]} stroke="rgba(255, 255, 255, 0.7)" />
+                    <Tooltip contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.9)', border: '1px solid rgba(98, 0, 69, 0.5)', borderRadius: '8px', color: 'white' }} />
+                    <Legend wrapperStyle={{ color: 'white' }} />
+                    <Bar dataKey="current" fill="rgba(98, 0, 69, 0.8)" name="Current Score" />
+                    <Bar dataKey="average" fill="rgba(98, 0, 69, 0.4)" name="Problem Average" />
                   </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            {/* Performance Trend Line Chart */}
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Performance Trend
-                </Typography>
-                <ResponsiveContainer width="100%" height={250}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis domain={[0, 100]} />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="current" stroke="#1976d2" strokeWidth={2} name="Current Score" />
-                    <Line type="monotone" dataKey="average" stroke="#82ca9d" strokeWidth={2} name="Problem Average" />
-                  </LineChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
@@ -307,13 +379,34 @@ export default function OAResults() {
         {/* Bottom: Transcript Full Width */}
         {results.transcript && (
           <Box>
-            <Card>
+            <Card
+              elevation={0}
+              sx={{
+                background: 'linear-gradient(135deg, rgba(98, 0, 69, 0.4) 0%, rgba(50, 20, 40, 0.5) 100%)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(98, 0, 69, 0.3)',
+                borderRadius: 2,
+              }}
+            >
               <CardContent>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h6" gutterBottom sx={{ color: 'white', fontWeight: 500 }}>
                   Interview Transcript
                 </Typography>
-                <Paper sx={{ p: 2, maxHeight: 400, overflow: 'auto', bgcolor: 'grey.50' }}>
-                  <Typography variant="body2" component="pre" sx={{ whiteSpace: 'pre-wrap' }}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    maxHeight: 400,
+                    overflow: 'auto',
+                    bgcolor: 'rgba(0, 0, 0, 0.4)',
+                    border: '1px solid rgba(98, 0, 69, 0.2)',
+                    borderRadius: 1,
+                    '&::-webkit-scrollbar': { width: '8px' },
+                    '&::-webkit-scrollbar-track': { background: 'rgba(255, 255, 255, 0.05)', borderRadius: 2 },
+                    '&::-webkit-scrollbar-thumb': { background: 'rgba(98, 0, 69, 0.5)', borderRadius: 2, '&:hover': { background: 'rgba(98, 0, 69, 0.7)' } }
+                  }}
+                >
+                  <Typography variant="body2" component="pre" sx={{ whiteSpace: 'pre-wrap', color: 'rgba(255, 255, 255, 0.9)' }}>
                     {results.transcript}
                   </Typography>
                 </Paper>
@@ -322,6 +415,8 @@ export default function OAResults() {
           </Box>
         )}
       </Paper>
-    </Container>
+        </Container>
+      </Box>
+    </Box>
   );
 }
