@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// src/App.tsx
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import Login from './pages/Admin/Login';
 import Register from './pages/Admin/Register';
@@ -6,31 +7,25 @@ import Dashboard from './pages/Admin/Dashboard';
 import OAResults from './pages/Admin/OAResults';
 import SystemDesignInterviewPage from './pages/Interview/SystemDesignInterviewPage';
 import SystemDesignInterview from './pages/Interview/SystemDesignInterview';
-import TechnicalInterview from './pages/Interview/TechnicalInterview';
-import BehavioralInterview from './pages/Interview/BehavioralInterview';
 import AssessmentFinishedPage from './pages/Interview/AssessmentFinishedPage';
 import PreInterview from './pages/Interview/PreInterview';
-import PracticeMode from './pages/Practice/PracticeMode';
-import { authService } from './services/auth.service';
+import ProtectedRoute from './components/ProtectedRoute';
+import { useAuth } from '@/hooks/useAuth';
+import { Navigate } from 'react-router-dom';
 
 const theme = createTheme({
   palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
+    primary: { main: '#1976d2' },
+    secondary: { main: '#dc004e' },
   },
 });
 
-// Protected Route wrapper
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  // TEMP: Auth bypassed for testing
-  // const isAuthenticated = authService.isAuthenticated();
-  // return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
-  return <>{children}</>;
-};
+// Root redirect based on auth state
+function RootRedirect() {
+  const { user, loading } = useAuth();
+  if (loading) return null; // or a loading spinner
+  return user ? <Navigate to="/admin/dashboard" replace /> : <Navigate to="/login" replace />;
+}
 
 function App() {
   return (
@@ -62,20 +57,15 @@ function App() {
 
           {/* Interview Routes */}
           <Route path="/interview/:assessmentId" element={<PreInterview />} />
-          <Route path="/interview/system-design/:interviewId" element={<SystemDesignInterviewPage />} />
+          <Route
+            path="/interview/system-design/:interviewId"
+            element={<SystemDesignInterviewPage />}
+          />
           <Route path="/interview/finished" element={<AssessmentFinishedPage />} />
-
-          <Route path="/interview/technical/:interviewId" element={<TechnicalInterview />} />
-          <Route path="/interview/behavioral/:interviewId" element={<BehavioralInterview />} />
-
           <Route path="/test" element={<SystemDesignInterview />} />
 
-
-          {/* Practice Mode */}
-          <Route path="/practice" element={<PracticeMode />} />
-
-          {/* Default redirect */}
-          <Route path="/" element={<Navigate to="/login" />} />
+          {/* Default Redirect */}
+          <Route path="/" element={<RootRedirect />} />
         </Routes>
       </Router>
     </ThemeProvider>
