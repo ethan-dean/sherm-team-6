@@ -19,7 +19,10 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
+
+    /* 👇 add this */
     "types": ["vite/client"]
   },
-  "include": ["src"]
+  /* 👇 ensure env.d.ts is included */
+  "include": ["src", "src/env.d.ts"]
 }
