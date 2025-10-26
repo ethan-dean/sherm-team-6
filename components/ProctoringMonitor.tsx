@@ -4,12 +4,14 @@ import React, { useEffect, useRef, useState } from 'react';
 
 interface ProctoringMonitorProps {
     sessionId: string
+    assessmentId?: string
     onViolation: (type: string, severity: string ) => void
     showPreview?: boolean
 }
 
 export function ProctoringMonitor({
     sessionId,
+    assessmentId,
     onViolation,
     showPreview = false
 }: ProctoringMonitorProps) {
@@ -106,6 +108,7 @@ export function ProctoringMonitor({
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 session_id: sessionId,
+                assessment_id: assessmentId,
                 frame: frameBase64,
                 timestamp: Date.now()
               })

@@ -194,6 +194,7 @@ const SystemDesignInterviewPage: React.FC = () => {
         {interviewId && (
           <ProctoringMonitor
             sessionId={interviewId}
+            assessmentId={interviewId}
             onViolation={handleViolation}
             showPreview={false}
           />
