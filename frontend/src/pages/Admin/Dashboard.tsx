@@ -72,28 +72,56 @@ export default function Dashboard() {
 
   // Actions
   const sendAssessment = async (problemId: string, email: string) => {
-    setSendingId(problemId);
+    setSendingId(problemId); // show loading state
     try {
       // Get current user (sender)
       const user = await authService.getUser();
       if (!user) throw new Error("Not authenticated");
       const senderId = user.id;
 
+      // Create assessment in database
       await createAssessment({
         problem_id: problemId,
         applicant_email: email,
         sender_id: senderId,
       });
 
+      // Generate unique assessment ID for the email link
+      const assessmentId = `assessment-${Date.now()}`;
+
+      // Send email via backend API
+      const response = await fetch('http://localhost:3000/api/send-interview-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          candidateEmail: email,
+          candidateName: email.split('@')[0], // Use email username as name
+          assessmentId: assessmentId,
+          company: 'Systema'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send email');
+      }
+
+      // Reload assessments table
       await reloadAssessments();
-      alert("OA created successfully.");
-    } catch (e) {
+
+      alert(`Assessment sent successfully to ${email}!\n\nAssessment ID: ${assessmentId}`);
+    } catch (e: any) {
       console.error(e);
-      alert("Failed to create OA");
+      alert(`Failed to send assessment: ${e.message || e}`);
     } finally {
-      setSendingId(null);
+      setSendingId(null); // reset loading state
     }
   };
+  
+  
 
   const handleLogout = () => authService.logout();
 

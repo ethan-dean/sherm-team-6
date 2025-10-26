@@ -1,0 +1,27 @@
+{
+  "assessment_id": "test-assessment-123",
+  "problemDescription": "Design a URL shortening service like bit.ly.\n\nRequirements:\n- Generate short URLs from long URLs\n- Redirect users from short to long URLs\n- Handle 100 million URLs\n- Support 1000 requests per second\n- 99.9% availability required",
+  "rubric": "Use the default grading rubric based on the 5 pillars: Reliability, Scalability, Availability, Communication, and Trade-off Analysis",
+  "transcript": "I'll use a load balancer to distribute traffic across multiple application servers for horizontal scaling. For the database, I'll use PostgreSQL with a master-replica setup - master handles writes and replicas handle reads. I'll add Redis as a caching layer since redirects are read-heavy. This is a trade-off: better performance but added complexity for cache invalidation. For reliability, if Redis fails, we fall back to the database. If the database master fails, we promote a replica.",
+  "diagramJson": {
+    "nodes": [
+      { "id": "1", "label": "Client" },
+      { "id": "2", "label": "Load Balancer" },
+      { "id": "3", "label": "App Server 1" },
+      { "id": "4", "label": "App Server 2" },
+      { "id": "5", "label": "Redis Cache" },
+      { "id": "6", "label": "PostgreSQL Master" },
+      { "id": "7", "label": "PostgreSQL Replica" }
+    ],
+    "edges": [
+      { "source": "1", "target": "2" },
+      { "source": "2", "target": "3" },
+      { "source": "2", "target": "4" },
+      { "source": "3", "target": "5", "label": "read" },
+      { "source": "4", "target": "5", "label": "read" },
+      { "source": "3", "target": "6", "label": "write" },
+      { "source": "4", "target": "6", "label": "write" },
+      { "source": "6", "target": "7", "label": "replicate" }
+    ]
+  }
+}

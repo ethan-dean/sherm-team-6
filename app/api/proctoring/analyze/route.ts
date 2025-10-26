@@ -24,7 +24,7 @@ export async function OPTIONS(req: NextRequest) {
 export async function POST(req: NextRequest){
     try {
         const body = await req.json()
-        const {session_id, frame, timestamp } = body
+        const {session_id, frame, timestamp, assessment_id } = body
 
         if ( !session_id || !frame ){
             return NextResponse.json(
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest){
                         .from('proctoring_frames')
                         .insert({
                             session_id,
+                            assessment_id,
                             timestamp,
                             suspicion_score: result.suspicion_score || 0,
                             reasons: result.reasons || [],
