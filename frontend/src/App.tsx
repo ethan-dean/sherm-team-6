@@ -7,7 +7,7 @@ import Register from './pages/Admin/Register';
 import Dashboard from './pages/Admin/Dashboard';
 import OAResults from './pages/Admin/OAResults';
 import SystemDesignInterviewPage from './pages/Interview/SystemDesignInterviewPage';
-import SystemDesignInterview from './pages/Interview/SystemDesignInterview';
+///import SystemDesignInterview from './pages/Interview/SystemDesignInterview';
 import AssessmentFinishedPage from './pages/Interview/AssessmentFinishedPage';
 import PreInterview from './pages/Interview/PreInterview';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -15,7 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 
 import ProctoringSuspicionChart from './components/admin/ProctoringSuspicionChart';
-import TestLineChart from './components/TestLineChart';
+
 
 const theme = createTheme({
   palette: {

@@ -90,15 +90,12 @@ export default function Dashboard() {
       if (!user) throw new Error("Not authenticated");
       const senderId = user.id;
 
-      // Create assessment in database
-      await createAssessment({
+      // Create assessment in database and get the generated UUID
+      const assessmentId = await createAssessment({
         problem_id: problemId,
         applicant_email: email,
         sender_id: senderId,
       });
-
-      // Generate unique assessment ID for the email link
-      const assessmentId = `assessment-${Date.now()}`;
 
       // Send email via backend API
       const response = await fetch('http://localhost:3000/api/send-interview-link', {

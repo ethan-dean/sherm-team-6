@@ -335,7 +335,7 @@ export default function OAResults() {
   useEffect(() => {
     const fetchAssessmentResults = async () => {
       if (!interviewId) {
-        setError('No assessment ID provided');
+        console.error('No assessment ID provided');
         setLoading(false);
         return;
       }
@@ -354,7 +354,7 @@ export default function OAResults() {
               ended_at
             )
           `)
-          .eq('id', interviewId)
+          .eq('assessment_id', interviewId)
           .single();
 
         if (resultError) {

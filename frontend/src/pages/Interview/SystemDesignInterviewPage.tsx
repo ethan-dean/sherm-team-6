@@ -69,87 +69,105 @@ const SystemDesignInterviewPage: React.FC = () => {
   };
 
   // Submit interview to backend and trigger grading
-  const submitInterview = async () => {
-    if (hasSubmittedRef.current || !interviewId) return;
-    hasSubmittedRef.current = true;
+const submitInterview = async () => {
+  if (hasSubmittedRef.current || !interviewId) return;
+  hasSubmittedRef.current = true;
 
-    console.log('[Interview] Submitting:', interviewId);
-    const duration = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
+  console.log('[Interview] Submitting:', interviewId);
+  const duration = startTimeRef.current ? Date.now() - startTimeRef.current : 0;
 
-    // Update assessment status in Supabase
-    try {
-      const { error: updateError } = await supabase
+  // ✅ Update assessment status in Supabase — mark interview as ended
+  try {
+    const { error: updateError } = await supabase
+      .from('design_assessments')
+      .update({
+        ended_at: new Date().toISOString(), // mark when it ended
+        started_at: startTimeRef.current
+          ? new Date(startTimeRef.current).toISOString()
+          : null, // in case it wasn't set before
+        status: 'complete', // optional but useful for filtering
+        duration_ms: duration, // optional field if you want total duration
+      })
+      .eq('id', interviewId);
+
+    if (updateError) {
+      console.error('[Interview] Failed to update assessment:', updateError);
+    } else {
+      console.log('[Interview] Assessment marked as ended');
+    }
+  } catch (error) {
+    console.error('[Interview] Update error:', error);
+  }
+
+  // Start grading process
+  setIsGrading(true);
+  console.log('[Interview] Starting grading process...');
+
+  try {
+    // Get diagram JSON from Canvas
+    const getDiagramJSON = (window as any).getDiagramJSON;
+    const diagramJson = getDiagramJSON ? getDiagramJSON() : { nodes: [], edges: [] };
+
+    console.log('[Interview] Diagram captured:', {
+      nodeCount: diagramJson.nodes?.length || 0,
+      edgeCount: diagramJson.edges?.length || 0
+    });
+
+    // Orchestrate grading (fetches problem, transcript, calls edge function, saves results)
+    await orchestrateGrading(interviewId, conversationId, diagramJson);
+
+    console.log('[Interview] Grading completed successfully');
+  } catch (gradingError) {
+    console.error('[Interview] Grading failed:', gradingError);
+  } finally {
+    setIsGrading(false);
+    console.log('[Interview] Redirecting to finished page');
+    navigate('/interview/finished');
+  }
+};
+
+
+ // Handle conversation start/stop with microphone permissions
+const handleStartConversation = async () => {
+  // Check and request microphone access
+  try {
+    await navigator.mediaDevices.getUserMedia({ audio: true });
+  } catch (error) {
+    console.error('[Microphone] Access denied:', error);
+    toast.error('Please enable microphone access to start the interview.');
+    return;
+  }
+
+  // Start the session with ElevenLabs agent
+  try {
+    await conversation.startSession({
+      agentId: 'agent_5401k89w0ehgejy8z1bghfxrc5cm',
+      connectionType: 'webrtc',
+    });
+
+    console.log('[Conversation] Started, conversation object:', conversation);
+
+    // ✅ Mark interview as started in Supabase
+    if (interviewId) {
+      const { error } = await supabase
         .from('design_assessments')
         .update({
-          ended_at: new Date().toISOString(),
-          started_at: startTimeRef.current ? new Date(startTimeRef.current).toISOString() : null,
+          started_at: new Date().toISOString(),
+          status: 'incomplete',
         })
         .eq('id', interviewId);
 
-      if (updateError) {
-        console.error('[Interview] Failed to update assessment:', updateError);
+      if (error) {
+        console.error('[Interview] Failed to mark as started:', error);
       } else {
-        console.log('[Interview] Assessment updated successfully');
+        console.log('[Interview] Marked as started in database');
       }
-    } catch (error) {
-      console.error('[Interview] Update error:', error);
     }
+  } catch (error) {
+    console.error('[Conversation] Failed to start session:', error);
+  }
+};
 
-    // Start grading process
-    setIsGrading(true);
-    console.log('[Interview] Starting grading process...');
-
-    try {
-      // Get diagram JSON from Canvas
-      const getDiagramJSON = (window as any).getDiagramJSON;
-      const diagramJson = getDiagramJSON ? getDiagramJSON() : { nodes: [], edges: [] };
-
-      console.log('[Interview] Diagram captured:', {
-        nodeCount: diagramJson.nodes?.length || 0,
-        edgeCount: diagramJson.edges?.length || 0
-      });
-
-      // Orchestrate grading (fetches problem, transcript, calls edge function, saves results)
-      await orchestrateGrading(interviewId, conversationId, diagramJson);
-
-      console.log('[Interview] Grading completed successfully');
-    } catch (gradingError) {
-      console.error('[Interview] Grading failed:', gradingError);
-      // Continue to redirect even if grading fails
-      // The user can still see partial results or retry later
-    } finally {
-      setIsGrading(false);
-      // Always redirect to finished page, regardless of success/failure
-      console.log('[Interview] Redirecting to finished page');
-      navigate('/interview/finished');
-    }
-  };
-
-  // Handle conversation start/stop with microphone permissions
-  const handleStartConversation = async () => {
-    // Check and request microphone access
-    try {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (error) {
-      console.error('[Microphone] Access denied:', error);
-      toast.error('Please enable microphone access to start the interview.');
-      return;
-    }
-
-    // Start the session with ElevenLabs agent
-    try {
-      await conversation.startSession({
-        agentId: 'agent_5401k89w0ehgejy8z1bghfxrc5cm',
-        connectionType: 'webrtc',
-      });
-
-      // Capture conversation ID if available
-      // The conversation object should have the conversationId after starting
-      console.log('[Conversation] Started, conversation object:', conversation);
-    } catch (error) {
-      console.error('[Conversation] Failed to start session:', error);
-    }
-  };
 
   const handleStopConversation = async () => {
     await conversation.endSession();
@@ -161,7 +179,7 @@ const SystemDesignInterviewPage: React.FC = () => {
     const convId = conversation.getId();
     console.log('[Conversation] Checking for ID, found:', convId, 'current:', conversationId);
     if (convId && convId !== conversationId) {
-      console.log('[Conversation] ✅ Captured conversation ID:', convId);
+      console.log('[Conversation] Captured conversation ID:', convId);
       setConversationId(convId);
     }
   }, [conversation, conversationId]);
@@ -309,7 +327,7 @@ const SystemDesignInterviewPage: React.FC = () => {
         {/* Status indicator */}
         {conversation.status !== 'disconnected' && (
           <div className="bg-black/80 text-white text-sm px-4 py-2 rounded-xl text-center">
-            {conversation.isSpeaking ? '🎙️ AI is speaking...' : '👂 Listening...'}
+            {conversation.isSpeaking ? 'AI is speaking...' : 'Listening...'}
           </div>
         )}
       </div>
